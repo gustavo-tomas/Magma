@@ -23,7 +23,7 @@ void log_output(log_level level, string message, ...)
     b8 is_error = level < LOG_LEVEL_WARN;
 
     // Ninguém gosta de alocar na Heap :(
-    const int message_size = 2000;
+    const i32 message_size = 2000;
     char output_message[message_size];
     memset(output_message, 0, sizeof(output_message));
 
