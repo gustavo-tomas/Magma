@@ -78,7 +78,7 @@ b8 platform_startup(platform_state* plat_state, string application_name, i32 x, 
 
     // Cria a janela \0/
     xcb_create_window(state->connection, XCB_COPY_FROM_PARENT, state->window, 
-                                                 state->screen->root, x, y, width, height, 30, XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                                                 state->screen->root, x, y, width, height, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                  state->screen->root_visual, event_mask, value_list);
                                     
     xcb_change_property(state->connection, XCB_PROP_MODE_REPLACE, state->window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING,
