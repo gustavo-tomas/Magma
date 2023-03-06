@@ -4,7 +4,7 @@ workspace "magma"
     toolset "clang"
     language "C"
     cppdialect "gnu++17"
-    configurations { "Debug", "Release", "Dist" }
+    configurations { "Debug", "Release" }
 
 -- Magma (Engine) ------------------------------------------------------------------------------------------------------
 project "magma"
@@ -25,7 +25,7 @@ project "magma"
 
     filter "configurations:Debug"
         buildoptions { "-Wall", "-g", "-fsanitize=address", "-fno-omit-frame-pointer" }
-        linkoptions { "-fsanitize=address" }
+        linkoptions { "-fsanitize=address", "-lX11", "-lX11-xcb", "-lxcb" }
         defines "_DEBUG"
         symbols "On"
         runtime "Debug"
