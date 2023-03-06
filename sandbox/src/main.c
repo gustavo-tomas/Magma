@@ -10,7 +10,5 @@ int main()
     MGM_DEBUG("Debugando: %f", 6.14f);
     MGM_TRACE("Traçando: %f", 7.14f);
 
-    MGM_ASSERT(1 == 0, "1 não é 0 :(");
-
     return 0;
 }
