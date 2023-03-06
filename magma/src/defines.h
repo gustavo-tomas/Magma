@@ -1,11 +1,12 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#include <stdint.h>
-
 /**
-* Definição de diversos tipos e macros
-*/
+ * @file defines.h
+ * @brief Definição de diversos tipos e macros.
+ */
+
+#include <stdint.h>
 
 // Inteiros sem sinal
 typedef uint8_t  u8;
@@ -26,6 +27,9 @@ typedef double f64;
 // Booleanos
 typedef int8_t  b8;
 typedef int32_t b32;
+
+// Cadeia de caracteres
+typedef const char* string;
 
 // Asserção de tipos
 #if defined(__clang__) || defined(__gcc__)
