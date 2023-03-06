@@ -8,16 +8,6 @@
 
 #include "../defines.h"
 
-// Cores
-#define COLOR_RED "\e[1;31m" // 1 -> Negrito
-#define COLOR_GRN "\e[0;32m" // 0 -> Regular
-#define COLOR_YLW "\e[0;33m"
-#define COLOR_BLU "\e[0;34m"
-#define COLOR_MAG "\e[0;35m"
-#define COLOR_CYN "\e[0;36m"
-#define COLOR_WHT "\e[0;37m"
-#define COLOR_RST "\e[0m"
-
 // FATAL e ERROR são inclusas em qualquer distribuição
 #define LOG_WARN_ENABLED 1
 #define LOG_INFO_ENABLED 1

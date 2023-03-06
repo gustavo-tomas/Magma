@@ -1,4 +1,5 @@
 #include "logger.h"
+#include "../platform/platform.h"
 
 // @TODO: temporario
 #include <stdio.h>
@@ -19,7 +20,7 @@ void shutdown_logging()
 void log_output(log_level level, string message, ...)
 {
     string level_strings[6] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
-    // b8 is_error = level < 2;
+    b8 is_error = level < LOG_LEVEL_WARN;
 
     // Ninguém gosta de alocar na Heap :(
     const int message_size = 2000;
@@ -34,16 +35,8 @@ void log_output(log_level level, string message, ...)
     char formatted_message[message_size];
     sprintf(formatted_message, "[%s]: %s\n", level_strings[level], output_message);
 
-    // @TODO: específico da plataforma
-    switch (level)
-    {
-        case LOG_LEVEL_FATAL:   printf(COLOR_RED "%s" COLOR_RST, formatted_message); break;
-        case LOG_LEVEL_ERROR:   printf(COLOR_RED "%s" COLOR_RST, formatted_message); break;
-        case LOG_LEVEL_WARN:    printf(COLOR_YLW "%s" COLOR_RST, formatted_message); break;
-        case LOG_LEVEL_INFO:    printf(COLOR_GRN "%s" COLOR_RST, formatted_message); break;
-        case LOG_LEVEL_DEBUG:   printf(COLOR_BLU "%s" COLOR_RST, formatted_message); break;
-        case LOG_LEVEL_TRACE:   printf(COLOR_WHT "%s" COLOR_RST, formatted_message); break;
-        
-        default: break;
-    }
+    if (is_error)
+        platform_console_write_error(formatted_message, level);
+    else
+        platform_console_write(formatted_message, level);
 }
