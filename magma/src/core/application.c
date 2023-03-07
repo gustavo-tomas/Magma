@@ -1,6 +1,7 @@
 #include "application.h"
 #include "logger.h"
 #include "mgm_memory.h"
+#include "event.h"
 
 #include "../game_types.h"
 #include "../platform/platform.h"
@@ -35,6 +36,12 @@ MGM_API b8 application_create(game* game_instance)
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
+
+    if (!event_initialize())
+    {
+        MGM_FATAL("Erro ao inicializar o sistema de eventos!");
+        return FALSE;
+    }
 
     if (!platform_startup(&app_state.platform, game_instance->app_config.name, 
                           game_instance->app_config.start_pos_x, game_instance->app_config.start_pos_y,
@@ -89,6 +96,8 @@ MGM_API b8 application_run()
     }
 
     app_state.is_running = FALSE;
+
+    event_shutdown();
     
     platform_shutdown(&app_state.platform);
 
