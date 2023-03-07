@@ -25,7 +25,7 @@ typedef struct event_system_state
 static b8 is_initialized = FALSE;
 static event_system_state state;
 
-b8 event_initialize()
+b8 initialize_event()
 {
     if (is_initialized == TRUE)
         return FALSE;

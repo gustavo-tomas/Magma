@@ -6,7 +6,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-b8 logging_initialize()
+b8 initialize_logging()
 {
     // @TODO
     return TRUE;

@@ -30,7 +30,7 @@ typedef enum log_level
     LOG_LEVEL_TRACE
 } log_level;
 
-b8 logging_initialize();
+b8 initialize_logging();
 void logging_shutdown();
 
 /**

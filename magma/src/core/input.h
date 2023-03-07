@@ -10,7 +10,7 @@
 #include "../defines.h"
 #include "key_codes.h"
 
-void input_initialize();
+void initialize_input();
 void input_shutdown();
 void input_update(f64 delta_time);
 

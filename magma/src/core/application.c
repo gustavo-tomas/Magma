@@ -19,12 +19,12 @@ typedef struct application_state
 } application_state;
 
 // Aplicação é inicializada SOMENTE 1 vez
-static b8 initialized = FALSE;
+static b8 is_initialized = FALSE;
 static application_state app_state;
 
 MGM_API b8 application_create(game* game_instance)
 {
-    if (initialized)
+    if (is_initialized)
     {
         MGM_ERROR("Erro ao criar aplicação (aplicação já foi inicializada)!");
         return FALSE;
@@ -33,13 +33,13 @@ MGM_API b8 application_create(game* game_instance)
     app_state.game_instance = game_instance;
 
     // Inicialização dos subsistemas (StartUp)
-    logging_initialize();
-    input_initialize();
+    initialize_logging();
+    initialize_input();
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
 
-    if (!event_initialize())
+    if (!initialize_event())
     {
         MGM_FATAL("Erro ao inicializar o sistema de eventos!");
         return FALSE;
@@ -60,7 +60,7 @@ MGM_API b8 application_create(game* game_instance)
 
     app_state.game_instance->on_resize(app_state.game_instance, app_state.width, app_state.height);
 
-    initialized = TRUE;
+    is_initialized = TRUE;
 
     return TRUE;
 }

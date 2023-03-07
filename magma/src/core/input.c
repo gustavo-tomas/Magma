@@ -23,23 +23,23 @@ typedef struct input_state
 } input_state;
 
 // Estado interno do input
-static b8 initialized = FALSE;
+static b8 is_initialized = FALSE;
 static input_state state = { };
 
-void input_initialize()
+void initialize_input()
 {
-    initialized = TRUE;
+    is_initialized = TRUE;
     MGM_INFO("Sistema de input inicializado!");
 }
 
 void input_shutdown()
 {
-    initialized = FALSE;
+    is_initialized = FALSE;
 }
 
 void input_update(f64 delta_time)
 {
-    if (!initialized)
+    if (!is_initialized)
         return;
 
     // Atualiza estados passados
@@ -101,7 +101,7 @@ void input_process_mouse_wheel(i8 z_delta)
 
 b8 input_is_key_down(keys key)
 {
-    if (!initialized)
+    if (!is_initialized)
         return FALSE;
 
     return state.keyboard_current.keys[key] == TRUE;
@@ -109,7 +109,7 @@ b8 input_is_key_down(keys key)
 
 b8 input_is_key_up(keys key)
 {
-    if (!initialized)
+    if (!is_initialized)
         return TRUE;
 
     return state.keyboard_current.keys[key] == FALSE;
@@ -117,7 +117,7 @@ b8 input_is_key_up(keys key)
 
 b8 input_was_key_down(keys key)
 {
-    if (!initialized)
+    if (!is_initialized)
         return FALSE;
 
     return state.keyboard_previous.keys[key] == TRUE;
@@ -125,7 +125,7 @@ b8 input_was_key_down(keys key)
 
 b8 input_was_key_up(keys key)
 {
-    if (!initialized)
+    if (!is_initialized)
         return TRUE;
 
     return state.keyboard_previous.keys[key] == FALSE;
@@ -133,7 +133,7 @@ b8 input_was_key_up(keys key)
 
 b8 input_is_button_down(buttons button)
 {
-    if (!initialized)
+    if (!is_initialized)
         return FALSE;
 
     return state.mouse_current.buttons[button] == TRUE;
@@ -141,7 +141,7 @@ b8 input_is_button_down(buttons button)
 
 b8 input_is_button_up(buttons button)
 {
-    if (!initialized)
+    if (!is_initialized)
         return TRUE;
 
     return state.mouse_current.buttons[button] == FALSE;
@@ -149,7 +149,7 @@ b8 input_is_button_up(buttons button)
 
 b8 input_was_button_down(buttons button)
 {
-    if (!initialized)
+    if (!is_initialized)
         return FALSE;
 
     return state.mouse_previous.buttons[button] == TRUE;
@@ -157,7 +157,7 @@ b8 input_was_button_down(buttons button)
 
 b8 input_was_button_up(buttons button)
 {
-    if (!initialized)
+    if (!is_initialized)
         return TRUE;
 
     return state.mouse_previous.buttons[button] == FALSE;
@@ -165,7 +165,7 @@ b8 input_was_button_up(buttons button)
 
 void input_get_mouse_position(i32* x, i32* y)
 {
-    if (!initialized)
+    if (!is_initialized)
     {
         *x = 0;
         *y = 0;
@@ -178,7 +178,7 @@ void input_get_mouse_position(i32* x, i32* y)
 
 void input_get_previous_mouse_position(i32* x, i32* y)
 {
-    if (!initialized)
+    if (!is_initialized)
     {
         *x = 0;
         *y = 0;
