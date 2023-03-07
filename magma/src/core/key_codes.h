@@ -2,6 +2,7 @@
 #define KEY_CODES_H
 
 /**
+ * @file key_codes.h
  * @brief Definição dos valores de botões do mouse e das teclas (padrão ASCII).
  * As teclas são específicas do Windows (traduzir para linux e mac).
  */

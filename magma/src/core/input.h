@@ -1,6 +1,12 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+/**
+ * @file input.h
+ * @brief Gerencia os estados de input (tecla pressionada, botão pressionado, etc).
+ * O estado de cada tecla é um booleano (mais detalhes na implementação).
+ */
+
 #include "../defines.h"
 #include "key_codes.h"
 
