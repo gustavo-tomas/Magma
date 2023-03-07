@@ -182,7 +182,7 @@ void* platform_allocate(u64 size, b8 aligned)
     return malloc(size);
 }
 
-void platform_freeze(void* block, b8 aligned)
+void platform_free(void* block, b8 aligned)
 {
     free(block);   
 }

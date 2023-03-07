@@ -4,6 +4,7 @@
 /**
  * @file platform.h
  * @brief Interface para abstrair o uso de códigos específicos para cada plataforma.
+ * Por enquanto, a única plataforma utilizada é Linux.
  */
 
 #include "../defines.h"
@@ -12,7 +13,6 @@ typedef struct platform_state
 {
     void* internal_state;
 } platform_state;
-
 
 /**
  * @brief Inicializa a janela e outros recursos, criando um estado com algumas referências relativas à plataforma.
@@ -39,7 +39,7 @@ b8 platform_dispatch_messages(platform_state* plat_state);
 // Alocação de memória
 
 void* platform_allocate(u64 size, b8 aligned);
-void platform_freeze(void* block, b8 aligned);
+void platform_free(void* block, b8 aligned);
 void* platform_zero_memory(void* block, u64 size);
 void* platform_copy_memory(void* dest, i32 source, u64 size);
 void* platform_set_memory(void* dest, i32 value, u64 size);
