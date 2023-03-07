@@ -2,6 +2,7 @@
 #include "logger.h"
 #include "mgm_memory.h"
 #include "event.h"
+#include "input.h"
 
 #include "../game_types.h"
 #include "../platform/platform.h"
@@ -31,8 +32,9 @@ MGM_API b8 application_create(game* game_instance)
 
     app_state.game_instance = game_instance;
 
-    // Inicialização dos módulos
-    initialize_logging();
+    // Inicialização dos subsistemas (StartUp)
+    logging_initialize();
+    input_initialize();
 
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
@@ -92,13 +94,18 @@ MGM_API b8 application_run()
                 app_state.is_running = FALSE;
                 break;
             }
+
+            // Input é o último a ser atualizado
+            input_update(0); // @TODO: delta time!
         }
     }
 
     app_state.is_running = FALSE;
 
+    // Desligamento dos subsistemas (ShutDown)
+    logging_shutdown();
     event_shutdown();
-    
+    input_shutdown();
     platform_shutdown(&app_state.platform);
 
     return TRUE;
