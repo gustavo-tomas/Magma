@@ -2,8 +2,7 @@
 
 #include <entry_point.h>
 
-// @TODO: temporário
-#include <platform/platform.h>
+#include <core/mgm_memory.h>
 
 // Ponto de entrada para criar o jogo
 b8 create_game(game* out_game)
@@ -19,7 +18,7 @@ b8 create_game(game* out_game)
     out_game->render = render;
     out_game->on_resize = on_resize;
 
-    out_game->state = platform_allocate(sizeof(game_state), FALSE);
+    out_game->state = mgm_allocate(sizeof(game_state), MEMORY_TAG_GAME);
 
     return TRUE;
 }

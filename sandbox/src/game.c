@@ -10,13 +10,11 @@ b8 initialize(game* game_instance)
 
 b8 update(game* game_instance, f32 delta_time)
 {
-    MGM_DEBUG("Update!");
     return TRUE;
 }
 
 b8 render(game* game_instance, f32 delta_time)
 {
-    MGM_DEBUG("Render!");
     return TRUE;
 }
 
