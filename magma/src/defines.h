@@ -28,9 +28,6 @@ typedef double f64;
 typedef int8_t  b8;
 typedef int32_t b32;
 
-// Cadeia de caracteres
-typedef const char* string;
-
 // Asserção de tipos
 #if defined(__clang__) || defined(__gcc__)
     #define STATIC_ASSERT _Static_assert

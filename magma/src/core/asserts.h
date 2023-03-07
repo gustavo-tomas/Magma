@@ -27,7 +27,7 @@
  * @param file arquivo em que a asserção ocorreu
  * @param line a linha em que a asserção ocorreu
  */
-MGM_API void report_assertion_failure(string expression, string message, string file, i32 line);
+MGM_API void report_assertion_failure(const char* expression, const char* message, const char* file, i32 line);
 
 /**
  * @brief Asserção de uma expressão booleana. Pode retornar uma mensagem.

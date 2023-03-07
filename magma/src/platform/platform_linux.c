@@ -33,7 +33,7 @@ typedef struct internal_state
 } internal_state;
 
 
-b8 platform_startup(platform_state* plat_state, string application_name, i32 x, i32 y, i32 width, i32 height)
+b8 platform_startup(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
     // Cria o estado interno
     plat_state->internal_state = malloc(sizeof(internal_state));
@@ -202,16 +202,16 @@ void* platform_set_memory(void* dest, i32 value, u64 size)
     return memset(dest, value, size);
 }
 
-void platform_console_write(string message, u8 color)
+void platform_console_write(const char* message, u8 color)
 {
-    string color_strings[] = { "0;41", "1;31", "1;33", "1;32", "1;34", "1;37" };
+    const char* color_strings[] = { "0;41", "1;31", "1;33", "1;32", "1;34", "1;37" };
 
     printf("\033[%sm%s\033[0m", color_strings[color], message);
 }
 
-void platform_console_write_error(string message, u8 color)
+void platform_console_write_error(const char* message, u8 color)
 {
-    string color_strings[] = { "0;41", "1;31", "1;33", "1;32", "1;34", "1;37" };
+    const char* color_strings[] = { "0;41", "1;31", "1;33", "1;32", "1;34", "1;37" };
 
     printf("\033[%sm%s\033[0m", color_strings[color], message);
 }

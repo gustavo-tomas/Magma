@@ -25,7 +25,7 @@ typedef struct platform_state
  * @param height Altura da janela
  * @return b8 Status (Sucesso = 1, Erro = 0)
  */
-b8 platform_startup(platform_state* plat_state, string application_name, i32 x, i32 y, i32 width, i32 height);
+b8 platform_startup(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height);
 
 /**
  * @brief Desliga a janela e os recursos criados no startup
@@ -46,8 +46,8 @@ void* platform_set_memory(void* dest, i32 value, u64 size);
 
 // Interação com o console
 
-void platform_console_write(string message, u8 color);
-void platform_console_write_error(string message, u8 color);
+void platform_console_write(const char* message, u8 color);
+void platform_console_write_error(const char* message, u8 color);
 
 f64 platform_get_absolute_time();
 

@@ -35,12 +35,12 @@ void shutdown_logging();
 
 /**
  * @brief Imprime a mensagem passada com uma classificação
- * 
+ *
  * @param level A classificação da mensagem
  * @param message A mensagem para imprimir
  * @param ... Argumentos opcionais
  */
-MGM_API void log_output(log_level level, string message, ...);
+MGM_API void log_output(log_level level, const char* message, ...);
 
 // Erro fatal
 #ifndef MGM_FATAL

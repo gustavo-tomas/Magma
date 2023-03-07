@@ -17,9 +17,9 @@ void shutdown_logging()
     // @TODO
 }
 
-void log_output(log_level level, string message, ...)
+void log_output(log_level level, const char* message, ...)
 {
-    string level_strings[6] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
+    const char* level_strings[6] = { "FATAL", "ERROR", "WARN", "INFO", "DEBUG", "TRACE" };
     b8 is_error = level < LOG_LEVEL_WARN;
 
     // Ninguém gosta de alocar na Heap :(
