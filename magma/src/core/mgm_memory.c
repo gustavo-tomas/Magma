@@ -16,7 +16,7 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] =
 {
     "UNKNOWN",
     "ARRAY",
-    "DARRAY",
+    "VECTOR",
     "DICT",
     "RING_QUEUE",
     "BST",
@@ -77,7 +77,7 @@ MGM_API void* mgm_zero_memory(void* block, u64 size)
     return platform_zero_memory(block, size);
 }
 
-MGM_API void* mgm_copy_memory(void* dest, i32 source, u64 size)
+MGM_API void* mgm_copy_memory(void* dest, const void* source, u64 size)
 {
     return platform_copy_memory(dest, source, size);
 }
