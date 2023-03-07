@@ -6,13 +6,13 @@
 #include <string.h>
 #include <stdarg.h>
 
-b8 initialize_logging()
+b8 logging_initialize()
 {
     // @TODO
     return TRUE;
 }
 
-void shutdown_logging()
+void logging_shutdown()
 {
     // @TODO
 }

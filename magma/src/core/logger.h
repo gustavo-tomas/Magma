@@ -30,8 +30,8 @@ typedef enum log_level
     LOG_LEVEL_TRACE
 } log_level;
 
-b8 initialize_logging();
-void shutdown_logging();
+b8 logging_initialize();
+void logging_shutdown();
 
 /**
  * @brief Imprime a mensagem passada com uma classificação
