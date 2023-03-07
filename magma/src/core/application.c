@@ -1,5 +1,6 @@
 #include "application.h"
 #include "logger.h"
+#include "mgm_memory.h"
 
 #include "../game_types.h"
 #include "../platform/platform.h"
@@ -57,6 +58,8 @@ MGM_API b8 application_create(game* game_instance)
 
 MGM_API b8 application_run()
 {
+    MGM_INFO(get_memory_usage_str());
+
     // Game Loop
     while (app_state.is_running)
     {

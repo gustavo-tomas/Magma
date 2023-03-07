@@ -8,9 +8,11 @@
  * do usuário.
  */
 
+#include "game_types.h"
+
 #include "core/application.h"
 #include "core/logger.h"
-#include "game_types.h"
+#include "core/mgm_memory.h" 
 
 /**
  * @brief Cria uma instância do jogo. Deve ser definido pelo usuário.
@@ -22,6 +24,8 @@ extern b8 create_game(game* out_game);
 
 int main()
 {
+    initialize_memory();
+
     game game_instance;
     if (!create_game(&game_instance))
     {
@@ -48,6 +52,8 @@ int main()
         MGM_INFO("Erro ao encerrar a aplicação!");
         return 2;
     }
+
+    shutdown_memory();
 
     return 0;
 }
