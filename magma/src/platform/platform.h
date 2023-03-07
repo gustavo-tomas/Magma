@@ -32,7 +32,7 @@ b8 platform_startup(platform_state* plat_state, const char* application_name, i3
  * 
  * @param plat_state O estado da plataforma
  */
-void platform_shutdown(platform_state* plat_state);
+void shutdown_platform(platform_state* plat_state);
 
 b8 platform_dispatch_messages(platform_state* plat_state);
 

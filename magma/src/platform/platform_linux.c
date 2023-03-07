@@ -113,7 +113,7 @@ b8 platform_startup(platform_state* plat_state, const char* application_name, i3
     return TRUE;
 }
 
-void platform_shutdown(platform_state* plat_state)
+void shutdown_platform(platform_state* plat_state)
 {
     internal_state* state = (internal_state *) plat_state->internal_state;
     XAutoRepeatOn(state->display); // lol

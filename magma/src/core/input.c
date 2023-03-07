@@ -32,7 +32,7 @@ void initialize_input()
     MGM_INFO("Sistema de input inicializado!");
 }
 
-void input_shutdown()
+void shutdown_input()
 {
     is_initialized = FALSE;
 }

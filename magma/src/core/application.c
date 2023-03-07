@@ -33,7 +33,7 @@ MGM_API b8 application_create(game* game_instance)
     app_state.game_instance = game_instance;
 
     // Inicialização dos subsistemas (StartUp)
-    initialize_logging();
+    initialize_logger();
     initialize_input();
 
     app_state.is_running = TRUE;
@@ -103,10 +103,10 @@ MGM_API b8 application_run()
     app_state.is_running = FALSE;
 
     // Desligamento dos subsistemas (ShutDown)
-    logging_shutdown();
-    event_shutdown();
-    input_shutdown();
-    platform_shutdown(&app_state.platform);
+    shutdown_logger();
+    shutdown_event();
+    shutdown_input();
+    shutdown_platform(&app_state.platform);
 
     return TRUE;
 }

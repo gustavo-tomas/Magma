@@ -11,7 +11,7 @@
 #include "key_codes.h"
 
 void initialize_input();
-void input_shutdown();
+void shutdown_input();
 void input_update(f64 delta_time);
 
 // Teclado

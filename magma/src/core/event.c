@@ -36,7 +36,7 @@ b8 initialize_event()
     return TRUE;
 }
 
-void event_shutdown()
+void shutdown_event()
 {
     for (u16 i = 0; i < MAX_MESSAGE_CODES; i++)
     {
