@@ -58,7 +58,7 @@ void input_process_key(keys key, b8 pressed)
     // Processa o evento
     event_context context;
     context.data.u16[0] = key;
-    event_fire(pressed ? EVENT_CODE_KEY_PRESSED : EVENT_CODE_KEY_RELEASED, 0, context);
+    fire_event(pressed ? EVENT_CODE_KEY_PRESSED : EVENT_CODE_KEY_RELEASED, 0, context);
 }
 
 void input_process_button(buttons button, b8 pressed)
@@ -72,7 +72,7 @@ void input_process_button(buttons button, b8 pressed)
     // Processa o evento
     event_context context;
     context.data.u16[0] = button;
-    event_fire(pressed ? EVENT_CODE_BUTTON_PRESSED : EVENT_CODE_BUTTON_RELEASED, 0, context);
+    fire_event(pressed ? EVENT_CODE_BUTTON_PRESSED : EVENT_CODE_BUTTON_RELEASED, 0, context);
 }
 
 void input_process_mouse_move(i16 x, i16 y)
@@ -88,7 +88,7 @@ void input_process_mouse_move(i16 x, i16 y)
     event_context context;
     context.data.u16[0] = x;
     context.data.u16[1] = y;
-    event_fire(EVENT_CODE_MOUSE_MOVED, 0, context);
+    fire_event(EVENT_CODE_MOUSE_MOVED, 0, context);
 }
 
 void input_process_mouse_wheel(i8 z_delta)
@@ -96,7 +96,7 @@ void input_process_mouse_wheel(i8 z_delta)
     // Processa o evento
     event_context context;
     context.data.u8[0] = z_delta;
-    event_fire(EVENT_CODE_MOUSE_WHEEL, 0, context);
+    fire_event(EVENT_CODE_MOUSE_WHEEL, 0, context);
 }
 
 b8 input_is_key_down(keys key)

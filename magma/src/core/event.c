@@ -66,9 +66,7 @@ MGM_API b8 register_event(u16 code, void* listener, on_event_ptr on_event)
         }
     }
 
-    registered_event event;
-    event.listener = listener;
-    event.callback = on_event;
+    registered_event event = { .listener = listener, .callback = on_event };
     vector_push(state.registered[code].events, event);
 
     return TRUE;
@@ -100,7 +98,7 @@ MGM_API b8 unregister_event(u16 code, void* listener, on_event_ptr on_event)
     return FALSE;
 }
 
-MGM_API b8 event_fire(u16 code, void* sender, event_context context)
+MGM_API b8 fire_event(u16 code, void* sender, event_context context)
 {
     if (is_initialized == FALSE)
         return FALSE;

@@ -68,6 +68,7 @@ MGM_API b8 application_run()
         if (!platform_dispatch_messages(&app_state.platform))
         {
             app_state.is_running = FALSE;
+            break;
         }
 
         if (!app_state.is_suspended)
@@ -91,10 +92,7 @@ MGM_API b8 application_run()
             // Input é o último a ser atualizado
             input_update(0); // @TODO: delta time!
         }
-        app_state.is_running = FALSE; // @TODO: deletar essa linha
     }
-
-    app_state.is_running = FALSE;
 
     // @TODO não é necessário
     unregister_event(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
@@ -137,7 +135,7 @@ b8 application_on_key(u16 code, void* sender, void* listener_instance, event_con
                 // Evento de saída
                 case KEY_ESCAPE:
                 case KEY_Q:
-                    event_fire(EVENT_CODE_APPLICATION_QUIT, 0, (event_context) { });
+                    fire_event(EVENT_CODE_APPLICATION_QUIT, 0, context);
                     return TRUE;
                     break;
 
