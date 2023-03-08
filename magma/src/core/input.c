@@ -29,7 +29,6 @@ static input_state state = { };
 void initialize_input()
 {
     is_initialized = TRUE;
-    MGM_INFO("Sistema de input inicializado!");
 }
 
 void shutdown_input()

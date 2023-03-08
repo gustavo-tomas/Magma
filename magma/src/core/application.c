@@ -110,7 +110,6 @@ b8 application_on_event(u16 code, void* sender, void* listener_instance, event_c
     switch (code)
     {
         case EVENT_CODE_APPLICATION_QUIT:
-            MGM_INFO("Evento de Saída - Terminando aplicação!");
             app_state.is_running = FALSE;
             return TRUE;
             break;
