@@ -19,6 +19,7 @@ typedef enum buttons
 // Teclado
 typedef enum keys
 {
+    KEY_UNKNOW = 0x00,
     KEY_BACKSPACE = 0x08,
     KEY_ENTER = 0x0D,
     KEY_TAB = 0x09,

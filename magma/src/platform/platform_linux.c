@@ -2,6 +2,9 @@
 
 #if MGM_PLATFORM_LINUX // Android pode reclamar
 
+#include "linux_key_codes.h"
+
+#include "../core/event.h"
 #include "../core/logger.h"
 #include "../core/mgm_memory.h"
 
@@ -52,7 +55,7 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
     state->display = XOpenDisplay(NULL);
 
     // Desativa repetições de tecla
-    // XAutoRepeatOff(state->display);
+    XAutoRepeatOff(state->display);
 
     state->connection = XGetXCBConnection(state->display);
 
@@ -140,14 +143,14 @@ void shutdown_platform(platform_state* plat_state)
 
 b8 platform_dispatch_messages(platform_state* plat_state)
 {
-    internal_state* state = (internal_state *) plat_state->internal_state;
+    internal_state* state = (internal_state *) plat_state->internal_state;    
     
-    xcb_generic_event_t* event = xcb_poll_for_event(state->connection);
+    xcb_generic_event_t* event;
     xcb_client_message_event_t* cm;
 
     b8 quit_flagged = FALSE;
 
-    while (event != 0)
+    do
     {
         event = xcb_poll_for_event(state->connection);
         if (event == 0)
@@ -157,19 +160,52 @@ b8 platform_dispatch_messages(platform_state* plat_state)
         switch (event->response_type & ~0x80)
         {
             case XCB_KEY_PRESS:
-                break;
-                
             case XCB_KEY_RELEASE:
-                break;
+            {
+                xcb_key_press_event_t* kp_event = (xcb_key_press_event_t*) event;
+                b8 pressed = event->response_type == XCB_KEY_PRESS;
+                xcb_keycode_t code = kp_event->detail;
+                KeySym key_sym = XkbKeycodeToKeysym(state->display, (KeyCode) code, 0, code & ShiftMask ? 1 : 0);
+
+                keys key = translate_keycode(key_sym);
+
+                input_process_key(key, pressed);
+            } break;
 
             case XCB_BUTTON_PRESS:
-                break;
-                
             case XCB_BUTTON_RELEASE:
-                break;
+            {
+                xcb_button_press_event_t* mouse_event = (xcb_button_press_event_t*) event;
+                b8 pressed = event->response_type == XCB_BUTTON_PRESS;
+                buttons mouse_button = BUTTON_MAX_BUTTONS;
+                
+                switch (mouse_event->detail)
+                {
+                    case XCB_BUTTON_INDEX_1:
+                        mouse_button = BUTTON_LEFT;
+                        break;
+                    
+                    case XCB_BUTTON_INDEX_2:
+                        mouse_button = BUTTON_MIDDLE;
+                        break;
+
+                    case XCB_BUTTON_INDEX_3:
+                        mouse_button = BUTTON_RIGHT;
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (mouse_button != BUTTON_MAX_BUTTONS)
+                    input_process_button(mouse_button, pressed);
+            } break;
 
             case XCB_MOTION_NOTIFY:
-                break;
+            {
+                xcb_motion_notify_event_t* move_event = (xcb_motion_notify_event_t*) event;
+                input_process_mouse_move(move_event->event_x, move_event->event_y);
+            } break;
 
             case XCB_CONFIGURE_NOTIFY:
                 break;
@@ -188,7 +224,7 @@ b8 platform_dispatch_messages(platform_state* plat_state)
         }
 
         free(event);
-    }
+    } while (event != 0);
     
     return !quit_flagged;
 }
@@ -211,7 +247,7 @@ void* platform_zero_memory(void* block, u64 size)
 
 void* platform_copy_memory(void* dest, const void* source, u64 size)
 {
-    return memset(dest, (i64) source, size);
+    return memcpy(dest, source, size);
 }
 
 void* platform_set_memory(void* dest, i32 value, u64 size)
