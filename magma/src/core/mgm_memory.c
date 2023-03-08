@@ -130,6 +130,6 @@ MGM_API char* get_memory_usage_str()
         offset += length;
     }
 
-    char* output_string = strndup(buffer, 8000);
+    char* output_string = buffer;
     return output_string;
 }

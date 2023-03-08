@@ -31,21 +31,11 @@ MGM_API b8 application_create(game* game_instance)
     }
 
     app_state.game_instance = game_instance;
-
-    // Inicialização dos subsistemas (StartUp)
-    initialize_logger();
-    initialize_input();
-
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
 
-    if (!initialize_event())
-    {
-        MGM_FATAL("Erro ao inicializar o sistema de eventos!");
-        return FALSE;
-    }
-
-    if (!platform_startup(&app_state.platform, game_instance->app_config.name, 
+    // @TODO: algum dia mover pra initialize_subsystems
+    if (!initialize_platform(&app_state.platform, game_instance->app_config.name, 
                           game_instance->app_config.start_pos_x, game_instance->app_config.start_pos_y,
                           game_instance->app_config.start_width, game_instance->app_config.start_height))
     {
@@ -98,14 +88,12 @@ MGM_API b8 application_run()
             // Input é o último a ser atualizado
             input_update(0); // @TODO: delta time!
         }
+        app_state.is_running = FALSE; // @TODO: deletar essa linha
     }
 
     app_state.is_running = FALSE;
 
     // Desligamento dos subsistemas (ShutDown)
-    shutdown_logger();
-    shutdown_event();
-    shutdown_input();
     shutdown_platform(&app_state.platform);
 
     return TRUE;

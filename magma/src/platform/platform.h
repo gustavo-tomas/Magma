@@ -25,7 +25,7 @@ typedef struct platform_state
  * @param height Altura da janela
  * @return b8 Status (Sucesso = 1, Erro = 0)
  */
-b8 platform_startup(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height);
+b8 initialize_platform(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height);
 
 /**
  * @brief Desliga a janela e os recursos criados no startup

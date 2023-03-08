@@ -1,10 +1,7 @@
 #include "game.h"
 
-#include <core/logger.h>
-
 b8 initialize(game* game_instance)
 {
-    MGM_DEBUG("Jogo inicializado!");
     return TRUE;
 }
 
