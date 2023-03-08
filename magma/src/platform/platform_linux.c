@@ -52,7 +52,7 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
     state->display = XOpenDisplay(NULL);
 
     // Desativa repetições de tecla
-    XAutoRepeatOff(state->display);
+    // XAutoRepeatOff(state->display);
 
     state->connection = XGetXCBConnection(state->display);
 
