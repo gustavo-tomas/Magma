@@ -33,6 +33,14 @@ typedef struct internal_state
 
 } internal_state;
 
+/**
+ * @brief Guarda referências para dados criados pela xcb, que precisam ser liberados manualmente.
+ */
+static struct xcb_ptrs
+{
+    xcb_intern_atom_reply_t* delete_reply;
+    xcb_intern_atom_reply_t* protocols_reply;
+} xcb_ptrs;
 
 b8 initialize_platform(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
@@ -92,9 +100,13 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
     xcb_intern_atom_cookie_t wm_protocols_cookie = xcb_intern_atom(state->connection, 0,
                                                                    strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
 
-
+    // Esses valores devem ser liberados (free)
     xcb_intern_atom_reply_t* wm_delete_reply = xcb_intern_atom_reply(state->connection, wm_delete_cookie, NULL);
     xcb_intern_atom_reply_t* wm_protocols_reply = xcb_intern_atom_reply(state->connection, wm_protocols_cookie, NULL);
+
+    // Salva referência para deletar no futuro
+    xcb_ptrs.delete_reply = wm_delete_reply;
+    xcb_ptrs.protocols_reply = wm_protocols_reply;
 
     state->wm_delete_win = wm_delete_reply->atom;
     state->wm_protocols = wm_protocols_reply->atom;
@@ -118,6 +130,10 @@ void shutdown_platform(platform_state* plat_state)
 {
     internal_state* state = (internal_state *) plat_state->internal_state;
     XAutoRepeatOn(state->display); // lol
+
+    // Libera memória manualmente (porque xcb é incrível)
+    free(xcb_ptrs.delete_reply);
+    free(xcb_ptrs.protocols_reply);
 
     xcb_destroy_window(state->connection, state->window);
 }
