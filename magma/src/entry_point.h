@@ -14,6 +14,8 @@
 #include "core/systems_manager.h"
 #include "core/logger.h"
 
+#include <stdlib.h> // @TODO: achar um jeito de deletar game
+
 /**
  * @brief Cria uma instância do jogo. Deve ser definido pelo usuário.
  *
@@ -54,6 +56,7 @@ int main()
         return 2;
     }
 
+    free(game_instance.state);
     shutdown_subsystems();
 
     return 0;
