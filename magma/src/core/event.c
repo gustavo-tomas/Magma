@@ -48,7 +48,7 @@ void shutdown_event()
     }
 }
 
-MGM_API b8 event_register(u16 code, void* listener, on_event_ptr on_event)
+MGM_API b8 register_event(u16 code, void* listener, on_event_ptr on_event)
 {
     if (is_initialized == FALSE)
         return FALSE;
@@ -74,7 +74,7 @@ MGM_API b8 event_register(u16 code, void* listener, on_event_ptr on_event)
     return TRUE;
 }
 
-MGM_API b8 event_unregister(u16 code, void* listener, on_event_ptr on_event)
+MGM_API b8 unregister_event(u16 code, void* listener, on_event_ptr on_event)
 {
     if (is_initialized == FALSE)
         return FALSE;

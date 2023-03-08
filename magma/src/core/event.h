@@ -39,8 +39,8 @@ typedef b8 (*on_event_ptr) (u16 code, void* sender, void* listener_instance, eve
 b8 initialize_event();
 void shutdown_event();
 
-MGM_API b8 event_register(u16 code, void* listener, on_event_ptr on_event);
-MGM_API b8 event_unregister(u16 code, void* listener, on_event_ptr on_event);
+MGM_API b8 register_event(u16 code, void* listener, on_event_ptr on_event);
+MGM_API b8 unregister_event(u16 code, void* listener, on_event_ptr on_event);
 MGM_API b8 event_fire(u16 code, void* sender, event_context context);
 
 typedef enum system_event_code

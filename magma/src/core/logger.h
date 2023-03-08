@@ -44,37 +44,37 @@ MGM_API void log_output(log_level level, const char* message, ...);
 
 // Erro fatal
 #ifndef MGM_FATAL
-    #define MGM_FATAL(message, ...) log_output(LOG_LEVEL_FATAL, message, ##__VA_ARGS__);
+    #define MGM_FATAL(message, ...) log_output(LOG_LEVEL_FATAL, message, ##__VA_ARGS__)
 #endif
 
 // Erro padrão
 #ifndef MGM_ERROR
-    #define MGM_ERROR(message, ...) log_output(LOG_LEVEL_ERROR, message, ##__VA_ARGS__);
+    #define MGM_ERROR(message, ...) log_output(LOG_LEVEL_ERROR, message, ##__VA_ARGS__)
 #endif
 
 // Alerta
 #if LOG_WARN_ENABLED == 1
-    #define MGM_WARN(message, ...) log_output(LOG_LEVEL_WARN, message, ##__VA_ARGS__);
+    #define MGM_WARN(message, ...) log_output(LOG_LEVEL_WARN, message, ##__VA_ARGS__)
 #else
     #define MGM_WARN(message, ...)
 #endif
 
 // Info
 #if LOG_INFO_ENABLED == 1
-    #define MGM_INFO(message, ...) log_output(LOG_LEVEL_INFO, message, ##__VA_ARGS__);
+    #define MGM_INFO(message, ...) log_output(LOG_LEVEL_INFO, message, ##__VA_ARGS__)
 #else
     #define MGM_INFO(message, ...)
 #endif
 
 // Debug
 #if LOG_DEBUG_ENABLED == 1
-    #define MGM_DEBUG(message, ...) log_output(LOG_LEVEL_DEBUG, message, ##__VA_ARGS__);
+    #define MGM_DEBUG(message, ...) log_output(LOG_LEVEL_DEBUG, message, ##__VA_ARGS__)
 #else
     #define MGM_DEBUG(message, ...)
 #endif
 
 #if LOG_TRACE_ENABLED == 1
-    #define MGM_TRACE(message, ...) log_output(LOG_LEVEL_TRACE, message, ##__VA_ARGS__);
+    #define MGM_TRACE(message, ...) log_output(LOG_LEVEL_TRACE, message, ##__VA_ARGS__)
 #else
     #define MGM_TRACE(message, ...)
 #endif
