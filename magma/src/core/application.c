@@ -93,7 +93,7 @@ MGM_API b8 application_run()
 
     app_state.is_running = FALSE;
 
-    // Desligamento dos subsistemas (ShutDown)
+    // @TODO: algum dia mover pra initialize_subsystems
     shutdown_platform(&app_state.platform);
 
     return TRUE;
