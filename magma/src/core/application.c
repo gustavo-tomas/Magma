@@ -1,7 +1,6 @@
 #include "application.h"
 #include "logger.h"
 #include "mgm_memory.h"
-#include "event.h"
 #include "input.h"
 
 #include "../game_types.h"
@@ -33,6 +32,10 @@ MGM_API b8 application_create(game* game_instance)
     app_state.game_instance = game_instance;
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
+
+    register_event(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    register_event(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    register_event(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
 
     // @TODO: algum dia mover pra initialize_subsystems
     if (!initialize_platform(&app_state.platform, game_instance->app_config.name, 
@@ -93,8 +96,83 @@ MGM_API b8 application_run()
 
     app_state.is_running = FALSE;
 
+    // @TODO não é necessário
+    unregister_event(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
+    unregister_event(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
+    unregister_event(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
+
     // @TODO: algum dia mover pra initialize_subsystems
     shutdown_platform(&app_state.platform);
 
     return TRUE;
+}
+
+b8 application_on_event(u16 code, void* sender, void* listener_instance, event_context context)
+{
+    switch (code)
+    {
+        case EVENT_CODE_APPLICATION_QUIT:
+            MGM_INFO("Evento de Saída - Terminando aplicação!");
+            app_state.is_running = FALSE;
+            return TRUE;
+            break;
+        
+        default:
+            break;
+    }
+
+    return FALSE;
+}
+
+b8 application_on_key(u16 code, void* sender, void* listener_instance, event_context context)
+{
+    switch (code)
+    {
+        // Tecla pressionada
+        case EVENT_CODE_KEY_PRESSED:
+        {
+            u16 key_code = context.data.u16[0];
+            switch (key_code)
+            {
+                // Evento de saída
+                case KEY_ESCAPE:
+                case KEY_Q:
+                    event_fire(EVENT_CODE_APPLICATION_QUIT, 0, (event_context) { });
+                    return TRUE;
+                    break;
+
+                // Testes
+                case KEY_SPACE:
+                    MGM_DEBUG("> Tecla 'SPACE' pressionada!");
+                    break;
+                
+                default:
+                    MGM_DEBUG("Tecla '%c' pressionada!", key_code);
+                    break;
+            }
+            break;
+        } break;
+
+        // Tecla levantada
+        case EVENT_CODE_KEY_RELEASED:
+        {
+            u16 key_code = context.data.u16[0];
+            switch (key_code)
+            {
+                case KEY_SPACE:
+                    MGM_DEBUG("> Tecla 'SPACE' levantada!");
+                    break;
+                
+                default:
+                    MGM_DEBUG("Tecla '%c' levantada!", key_code);
+                    break;
+            }
+            break;
+        } break;
+        
+        default:
+            break;
+    }
+
+    return FALSE;
 }

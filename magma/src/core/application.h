@@ -9,6 +9,7 @@
  */
 
 #include "../defines.h"
+#include "event.h"
 
 struct game;
 
@@ -27,5 +28,9 @@ typedef struct application_config
 
 MGM_API b8 application_create(struct game* game_instance);
 MGM_API b8 application_run();
+
+// Eventos
+b8 application_on_event(u16 code, void* sender, void* listener_instance, event_context context);
+b8 application_on_key(u16 code, void* sender, void* listener_instance, event_context context);
 
 #endif // APPLICATION_H
