@@ -24,7 +24,7 @@ typedef struct application_state
 static b8 is_initialized = FALSE;
 static application_state app_state;
 
-MGM_API b8 application_create(game* game_instance)
+MGM_API b8 create_application(game* game_instance)
 {
     if (is_initialized)
     {
@@ -36,9 +36,9 @@ MGM_API b8 application_create(game* game_instance)
     app_state.is_running = TRUE;
     app_state.is_suspended = FALSE;
 
-    register_event(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
-    register_event(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
-    register_event(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
+    register_event(EVENT_CODE_APPLICATION_QUIT, 0, on_event_application);
+    register_event(EVENT_CODE_KEY_PRESSED, 0, on_key_application);
+    register_event(EVENT_CODE_KEY_RELEASED, 0, on_key_application);
 
     // @TODO: algum dia mover pra initialize_subsystems
     if (!initialize_platform(&app_state.platform, game_instance->app_config.name, 
@@ -128,9 +128,9 @@ MGM_API b8 application_run()
     }
 
     // @TODO não é necessário
-    unregister_event(EVENT_CODE_APPLICATION_QUIT, 0, application_on_event);
-    unregister_event(EVENT_CODE_KEY_PRESSED, 0, application_on_key);
-    unregister_event(EVENT_CODE_KEY_RELEASED, 0, application_on_key);
+    unregister_event(EVENT_CODE_APPLICATION_QUIT, 0, on_event_application);
+    unregister_event(EVENT_CODE_KEY_PRESSED, 0, on_key_application);
+    unregister_event(EVENT_CODE_KEY_RELEASED, 0, on_key_application);
 
     // @TODO: algum dia mover pra initialize_subsystems
     shutdown_platform(&app_state.platform);
@@ -138,7 +138,7 @@ MGM_API b8 application_run()
     return TRUE;
 }
 
-b8 application_on_event(u16 code, void* sender, void* listener_instance, event_context context)
+b8 on_event_application(u16 code, void* sender, void* listener_instance, event_context context)
 {
     switch (code)
     {
@@ -154,7 +154,7 @@ b8 application_on_event(u16 code, void* sender, void* listener_instance, event_c
     return FALSE;
 }
 
-b8 application_on_key(u16 code, void* sender, void* listener_instance, event_context context)
+b8 on_key_application(u16 code, void* sender, void* listener_instance, event_context context)
 {
     switch (code)
     {

@@ -16,9 +16,9 @@ typedef struct game_state
     f32 delta_time;
 } game_state;
 
-b8 initialize(game* game_instance);
-b8 update(game* game_instance, f32 delta_time);
-b8 render(game* game_instance, f32 delta_time);
-void on_resize(game* game_instance, u32 width, u32 height);
+b8 initialize_game(game* game_instance);
+b8 update_game(game* game_instance, f32 delta_time);
+b8 render_game(game* game_instance, f32 delta_time);
+void on_resize_game(game* game_instance, u32 width, u32 height);
 
 #endif // GAME_H

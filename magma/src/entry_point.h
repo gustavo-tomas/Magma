@@ -43,7 +43,7 @@ int main()
     }
 
     // Inicialização
-    if (!application_create(&game_instance))
+    if (!create_application(&game_instance))
     {
         MGM_ERROR("Erro ao criar a aplicação!");
         return 1;
