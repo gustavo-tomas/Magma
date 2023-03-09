@@ -2,8 +2,6 @@
 
 #include <entry_point.h>
 
-#include <core/mgm_memory.h>
-
 // Ponto de entrada para criar o jogo
 b8 create_game(game* out_game)
 {

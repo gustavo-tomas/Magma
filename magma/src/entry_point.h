@@ -13,8 +13,7 @@
 #include "core/application.h"
 #include "core/systems_manager.h"
 #include "core/logger.h"
-
-#include <stdlib.h> // @TODO: achar um jeito de deletar game
+#include "core/mgm_memory.h"
 
 /**
  * @brief Cria uma instância do jogo. Deve ser definido pelo usuário.
@@ -50,13 +49,13 @@ int main()
     }
 
     // Game Loop
-    if (!application_run())
+    if (!run_application())
     {
         MGM_INFO("Erro ao encerrar a aplicação!");
         return 2;
     }
 
-    free(game_instance.state);
+    mgm_free(game_instance.state, sizeof(game_state), MEMORY_TAG_GAME);
     shutdown_subsystems();
 
     return 0;

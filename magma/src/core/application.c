@@ -43,15 +43,15 @@ MGM_API b8 create_application(game* game_instance)
     register_event(EVENT_CODE_KEY_RELEASED, 0, on_key_application);
 
     // @TODO: algum dia mover pra initialize_subsystems?
-    if (!initialize_platform(&app_state.platform, game_instance->app_config.name, 
-                          game_instance->app_config.start_pos_x, game_instance->app_config.start_pos_y,
-                          game_instance->app_config.start_width, game_instance->app_config.start_height))
+    if (!initialize_platform(&app_state.platform, app_state.game_instance->app_config.name, 
+                          app_state.game_instance->app_config.start_pos_x, app_state.game_instance->app_config.start_pos_y,
+                          app_state.game_instance->app_config.start_width, app_state.game_instance->app_config.start_height))
     {
         return FALSE;
     }
 
     // @TODO: também mover para initialize_subsystems?
-    if (!initialize_renderer(game_instance->app_config.name, &app_state.platform))
+    if (!initialize_renderer(app_state.game_instance->app_config.name, &app_state.platform))
     {
         MGM_FATAL("Erro ao inicializar o renderizador!");
         return FALSE;
@@ -70,7 +70,7 @@ MGM_API b8 create_application(game* game_instance)
     return TRUE;
 }
 
-MGM_API b8 application_run()
+MGM_API b8 run_application()
 {
     MGM_INFO(get_memory_usage_str());
 

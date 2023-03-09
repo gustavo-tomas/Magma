@@ -27,7 +27,7 @@ typedef struct application_config
 } application_config;
 
 MGM_API b8 create_application(struct game* game_instance);
-MGM_API b8 application_run();
+MGM_API b8 run_application();
 
 // Eventos
 b8 on_event_application(u16 code, void* sender, void* listener_instance, event_context context);
