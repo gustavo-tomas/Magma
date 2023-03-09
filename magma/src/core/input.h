@@ -12,7 +12,7 @@
 
 void initialize_input();
 void shutdown_input();
-void input_update(f64 delta_time);
+void update_input(f64 delta_time);
 
 // Teclado
 MGM_API b8 input_is_key_down(keys key);

@@ -36,7 +36,7 @@ void shutdown_input()
     is_initialized = FALSE;
 }
 
-void input_update(f64 delta_time)
+void update_input(f64 delta_time)
 {
     if (!is_initialized)
         return;
