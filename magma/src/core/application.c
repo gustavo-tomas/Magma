@@ -70,7 +70,6 @@ MGM_API b8 application_run()
     app_state.last_time = app_state.clock.elapsed_time;
 
     f64 target_frame_time = 1.0f / 60;
-    u8 frame_count = 0;
 
     // Game Loop
     while (app_state.is_running)
@@ -116,8 +115,6 @@ MGM_API b8 application_run()
                 b8 limit_frames = FALSE;
                 if (remaining_ms > 0 && limit_frames)
                     platform_sleep(remaining_ms - 1);
-
-                frame_count++;
             }
 
             // Input é o último a ser atualizado
