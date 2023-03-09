@@ -11,3 +11,7 @@
   - Vulkan (baixo nível, mas fornece maior controle ao usuário)
   - OpenGL (mais fácil de aprender, mas é datado)
   - DirectX (API nativa do Windows e Xbox)
+
+Referências:
+
+- [Vídeo](https://www.youtube.com/watch?v=70q9jtjWP4o&list=PLv8Ddw9K0JPg1BEO-RS-0MYs423cvLVtj&index=15)
