@@ -15,7 +15,7 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
     VkApplicationInfo app_info = { VK_STRUCTURE_TYPE_APPLICATION_INFO };
     app_info.apiVersion = VK_API_VERSION_1_3;
     app_info.pApplicationName = application_name;
-    app_info.applicationVersion = VK_MAKE_API_VERSION(1, 3, 0, 0);
+    app_info.applicationVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
     app_info.pEngineName = "Magma Engine";
     app_info.engineVersion = VK_MAKE_API_VERSION(1, 0, 0, 0);
 
