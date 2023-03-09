@@ -8,6 +8,8 @@
 #include "../game_types.h"
 #include "../platform/platform.h"
 
+#include "../renderer/renderer_frontend.h"
+
 typedef struct application_state
 {
     game* game_instance;
@@ -40,11 +42,18 @@ MGM_API b8 create_application(game* game_instance)
     register_event(EVENT_CODE_KEY_PRESSED, 0, on_key_application);
     register_event(EVENT_CODE_KEY_RELEASED, 0, on_key_application);
 
-    // @TODO: algum dia mover pra initialize_subsystems
+    // @TODO: algum dia mover pra initialize_subsystems?
     if (!initialize_platform(&app_state.platform, game_instance->app_config.name, 
                           game_instance->app_config.start_pos_x, game_instance->app_config.start_pos_y,
                           game_instance->app_config.start_width, game_instance->app_config.start_height))
     {
+        return FALSE;
+    }
+
+    // @TODO: também mover para initialize_subsystems?
+    if (!initialize_renderer(game_instance->app_config.name, &app_state.platform))
+    {
+        MGM_FATAL("Erro ao inicializar o renderizador!");
         return FALSE;
     }
 
@@ -103,6 +112,10 @@ MGM_API b8 application_run()
                 break;
             }
 
+            // @TODO: pacote não deve ser criado desse jeito
+            render_packet packet = { .delta_time = delta_time };
+            draw_frame_renderer(&packet);
+
             // Calcula o tempo do frame
             f64 frame_end_time = platform_get_absolute_time();
             f64 frame_elapsed_time = frame_end_time - frame_start_time;
@@ -128,6 +141,8 @@ MGM_API b8 application_run()
     unregister_event(EVENT_CODE_APPLICATION_QUIT, 0, on_event_application);
     unregister_event(EVENT_CODE_KEY_PRESSED, 0, on_key_application);
     unregister_event(EVENT_CODE_KEY_RELEASED, 0, on_key_application);
+
+    shutdown_renderer();
 
     // @TODO: algum dia mover pra initialize_subsystems
     shutdown_platform(&app_state.platform);
