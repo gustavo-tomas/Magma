@@ -1,7 +1,9 @@
 #include "application.h"
+
+#include "clock.h"
+#include "input.h"
 #include "logger.h"
 #include "mgm_memory.h"
-#include "input.h"
 
 #include "../game_types.h"
 #include "../platform/platform.h"
@@ -14,7 +16,8 @@ typedef struct application_state
     platform_state platform;
     i16 width;
     i16 height;
-    f64 last_frame;
+    clock clock;
+    f64 last_time;
 } application_state;
 
 // Aplicação é inicializada SOMENTE 1 vez
@@ -62,6 +65,13 @@ MGM_API b8 application_run()
 {
     MGM_INFO(get_memory_usage_str());
 
+    start_clock(&app_state.clock);
+    update_clock(&app_state.clock);
+    app_state.last_time = app_state.clock.elapsed_time;
+
+    f64 target_frame_time = 1.0f / 60;
+    u8 frame_count = 0;
+
     // Game Loop
     while (app_state.is_running)
     {
@@ -73,24 +83,47 @@ MGM_API b8 application_run()
 
         if (!app_state.is_suspended)
         {
-            // Update
-            if (!app_state.game_instance->update(app_state.game_instance, 0.f))
+            // Update ----------------------------------------------------------
+            update_clock(&app_state.clock);
+            f64 current_time = app_state.clock.elapsed_time;
+            f64 delta_time = current_time - app_state.last_time;
+            f64 frame_start_time = platform_get_absolute_time();
+
+            if (!app_state.game_instance->update(app_state.game_instance, (f32) delta_time))
             {
                 MGM_FATAL("Erro no Game Update!");
                 app_state.is_running = FALSE;
                 break;
             }
 
-            // Render
-            if (!app_state.game_instance->render(app_state.game_instance, 0.f))
+            // Render ----------------------------------------------------------
+            if (!app_state.game_instance->render(app_state.game_instance, (f32) delta_time))
             {
                 MGM_FATAL("Erro no Game Render!");
                 app_state.is_running = FALSE;
                 break;
             }
 
+            // Calcula o tempo do frame
+            f64 frame_end_time = platform_get_absolute_time();
+            f64 frame_elapsed_time = frame_end_time - frame_start_time;
+            f64 remaining_time = target_frame_time - frame_elapsed_time;
+
+            if (remaining_time > 0)
+            {
+                u64 remaining_ms = remaining_time * 1000;
+
+                b8 limit_frames = FALSE;
+                if (remaining_ms > 0 && limit_frames)
+                    platform_sleep(remaining_ms - 1);
+
+                frame_count++;
+            }
+
             // Input é o último a ser atualizado
-            input_update(0); // @TODO: delta time!
+            update_input(delta_time);
+
+            app_state.last_time = current_time;
         }
     }
 
