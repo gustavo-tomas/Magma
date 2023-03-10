@@ -10,12 +10,119 @@ b8 create_vulkan_device(vulkan_context* context)
     if (!select_physical_device(context))
         return FALSE;
 
+    // NÃO criar queues para índices compartilhados!
+    b8 present_shares_graphics_queue  = context->device.graphics_queue_index == context->device.present_queue_index;
+    b8 transfer_shares_graphics_queue = context->device.graphics_queue_index == context->device.transfer_queue_index;
+    u32 index_count = 1;
+
+    if (!present_shares_graphics_queue)
+        index_count++;
+    
+    if (!transfer_shares_graphics_queue)
+        index_count++;
+
+    u32 indices[index_count];
+    u8 index = 0;
+
+    indices[index++] = context->device.graphics_queue_index;
+
+    if (!present_shares_graphics_queue)
+        indices[index++] = context->device.present_queue_index;
+
+    if (!transfer_shares_graphics_queue)
+        indices[index++] = context->device.transfer_queue_index;
+
+    VkDeviceQueueCreateInfo queue_create_infos[index_count];
+    for (u32 i = 0; i < index_count; i++)
+    {
+        queue_create_infos[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queue_create_infos[i].queueFamilyIndex = indices[i];
+        queue_create_infos[i].queueCount = 1;
+
+        // @TODO: o futuro já começou
+        // if (indices[i] == context->device.graphics_queue_index)
+        //     queue_create_infos[i].queueCount = 2;
+        
+        queue_create_infos[i].flags = 0;
+        queue_create_infos[i].pNext = 0;
+        queue_create_infos[i].pQueuePriorities = (f32*) mgm_allocate(sizeof(f32), MEMORY_TAG_RENDERER);
+    }
+
+    // @TODO: deve ser escolhido pela configuração
+    VkPhysicalDeviceFeatures device_features = { };
+    device_features.samplerAnisotropy = VK_TRUE;
+
+    VkDeviceCreateInfo device_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
+    device_create_info.queueCreateInfoCount = index_count;
+    device_create_info.pQueueCreateInfos = queue_create_infos;
+    device_create_info.pEnabledFeatures = &device_features;
+    device_create_info.enabledExtensionCount = 1;
+
+    const char* extension_names = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+    device_create_info.ppEnabledExtensionNames = &extension_names;
+
+    // Cria o dispositivo lógico
+    VK_CHECK(vkCreateDevice(context->device.physical_device, &device_create_info, context->allocator, &context->device.logical_device));
+    MGM_INFO("(Vulkan) Dispositivo lógico criado com sucesso!");
+
+    // Obtém os 'Queues'
+    vkGetDeviceQueue(context->device.logical_device, context->device.graphics_queue_index, 0, &context->device.graphics_queue);
+    vkGetDeviceQueue(context->device.logical_device, context->device.present_queue_index, 0, &context->device.present_queue);
+    vkGetDeviceQueue(context->device.logical_device, context->device.transfer_queue_index, 0, &context->device.transfer_queue);
+
+    MGM_INFO("(Vulkan) 'Queue' obtido com sucesso!");
+
+    // Libera recursos @TODO: provável vazamento aqui
+    for (u32 i = 0; i < index_count; i++)
+        mgm_free((void *) queue_create_infos[i].pQueuePriorities, sizeof(f32), MEMORY_TAG_RENDERER);
+
     return TRUE;
 }
 
 void destroy_vulkan_device(vulkan_context* context)
 {
-    vkDestroyDevice(context->device.logical_device, context->allocator);
+    // Libera os 'Queues'
+    context->device.graphics_queue = 0;
+    context->device.present_queue = 0;
+    context->device.transfer_queue = 0;
+
+    // Deleta dispositivos lógicos
+    if (context->device.logical_device)
+    {
+        vkDestroyDevice(context->device.logical_device, context->allocator);
+        context->device.logical_device = 0;
+        MGM_INFO("(Vulkan) Dispositivo lógico destruído com sucesso!");
+    }
+
+    // Dispositivos físicos NÃO são deletados
+    context->device.physical_device = 0;
+    MGM_INFO("(Vulkan) Dispositivo físico liberado com sucesso!");
+
+    if (context->device.swapchain_support.formats)
+    {
+        mgm_free(context->device.swapchain_support.formats,
+                 sizeof(VkSurfaceFormatKHR) * context->device.swapchain_support.format_count,
+                 MEMORY_TAG_RENDERER);
+
+        context->device.swapchain_support.formats = 0;
+        context->device.swapchain_support.format_count = 0;
+    }
+
+    if (context->device.swapchain_support.present_modes)
+    {
+        mgm_free(context->device.swapchain_support.present_modes,
+                 sizeof(VkPresentModeKHR) * context->device.swapchain_support.present_mode_count,
+                 MEMORY_TAG_RENDERER);
+
+        context->device.swapchain_support.present_modes = 0;
+        context->device.swapchain_support.present_mode_count = 0;
+    }
+
+    mgm_zero_memory(&context->device.swapchain_support.capabilities, sizeof(context->device.swapchain_support.capabilities));
+
+    context->device.graphics_queue_index = -1;
+    context->device.present_queue_index  = -1;
+    context->device.transfer_queue_index = -1;
 }
 
 void query_device_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, vulkan_swapchain_support_info* support_info)
@@ -88,39 +195,39 @@ b8 select_physical_device(vulkan_context* context)
 
         if (result)
         {
-            MGM_INFO("Dispositivo selecionado: %s", properties.deviceName);
+            MGM_INFO("(Vulkan) Dispositivo selecionado: %s", properties.deviceName);
             switch (properties.deviceType)
             {
                 default:
                 case VK_PHYSICAL_DEVICE_TYPE_OTHER:
-                    MGM_INFO("Tipo da GPU desconhecido");
+                    MGM_INFO("(Vulkan) Tipo da GPU desconhecido");
                     break;
 
                 case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                    MGM_INFO("Tipo da GPU é integrado");
+                    MGM_INFO("(Vulkan) Tipo da GPU é integrado");
                     break;
 
                 case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                    MGM_INFO("Tipo da GPU é discreto");
+                    MGM_INFO("(Vulkan) Tipo da GPU é discreto");
                     break;
 
                 case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
-                    MGM_INFO("Tipo da GPU é virtual");
+                    MGM_INFO("(Vulkan) Tipo da GPU é virtual");
                     break;
 
                 case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                    MGM_INFO("Tipo da GPU é CPU");
+                    MGM_INFO("(Vulkan) Tipo da GPU é CPU");
                     break;
             }
 
             // Informação sobre os drivers
-            MGM_INFO("Versão dos Drivers da GPU: %d.%d.%d",
+            MGM_INFO("(Vulkan) Versão dos Drivers da GPU: %d.%d.%d",
                 VK_VERSION_MAJOR(properties.driverVersion),
                 VK_VERSION_MINOR(properties.driverVersion),
                 VK_VERSION_PATCH(properties.driverVersion));
 
             // Informação sobre a API do Vulkan
-            MGM_INFO("Versão da API do Vulkan: %d.%d.%d",
+            MGM_INFO("(Vulkan) Versão da API do Vulkan: %d.%d.%d",
                 VK_VERSION_MAJOR(properties.apiVersion),
                 VK_VERSION_MINOR(properties.apiVersion),
                 VK_VERSION_PATCH(properties.apiVersion));
@@ -130,9 +237,9 @@ b8 select_physical_device(vulkan_context* context)
             {
                 f32 memory_size_gib = ((f32) memory.memoryHeaps[j].size) / 1024.f / 1024.f / 1024.f;
                 if (memory.memoryHeaps[j].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT)
-                    MGM_INFO("Memória da GPU: %.2f GiB", memory_size_gib);
+                    MGM_INFO("(Vulkan) Memória da GPU: %.2f GiB", memory_size_gib);
                 else
-                    MGM_INFO("Memória compartilhada do sistema: %.2f GiB", memory_size_gib);
+                    MGM_INFO("(Vulkan) Memória compartilhada do sistema: %.2f GiB", memory_size_gib);
             }
 
             // Salva propriedades do dispositivo
@@ -152,11 +259,11 @@ b8 select_physical_device(vulkan_context* context)
     // Verifica se um dispositivo foi selecionado
     if (!context->device.physical_device)
     {
-        MGM_ERROR("Nenhum dispositivo físico encontrado possui os requerimentos necessários!");
+        MGM_ERROR("(Vulkan) Nenhum dispositivo físico encontrado possui os requerimentos necessários!");
         return FALSE;
     }
 
-    MGM_INFO("Dispositivo físico selecionado!");
+    MGM_INFO("(Vulkan) Dispositivo físico selecionado!");
     return TRUE;
 }
 
@@ -178,7 +285,7 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
     {
         if (properties->deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
         {
-            MGM_INFO("Dispositivo '%s' não é uma GPU Discreta!", properties->deviceName);
+            MGM_INFO("(Vulkan) Dispositivo '%s' não é uma GPU Discreta!", properties->deviceName);
             return FALSE;
         }
     }
@@ -234,11 +341,11 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
         (!requirements->compute  || queue_info->compute_family_index  != -1) &&
         (!requirements->transfer || queue_info->transfer_family_index != -1))
     {
-        MGM_INFO("Dispositivo possui todos os requerimentos necessários!");
-        MGM_INFO("Índice de Gráficos: %d", queue_info->graphics_family_index);
-        MGM_INFO("Índice de 'Present': %d", queue_info->present_family_index);
-        MGM_INFO("Índice de Transferência: %d", queue_info->transfer_family_index);
-        MGM_INFO("Índice de Computação: %d", queue_info->compute_family_index);
+        MGM_INFO("(Vulkan) Dispositivo possui todos os requerimentos necessários!");
+        MGM_INFO("(Vulkan) Índice de Gráficos: %d", queue_info->graphics_family_index);
+        MGM_INFO("(Vulkan) Índice de 'Present': %d", queue_info->present_family_index);
+        MGM_INFO("(Vulkan) Índice de Transferência: %d", queue_info->transfer_family_index);
+        MGM_INFO("(Vulkan) Índice de Computação: %d", queue_info->compute_family_index);
         
         // Verifica suporte de swapchain do dispositivo
         query_device_swapchain_support(device, surface, swapchain_support);
@@ -251,7 +358,7 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
             if (swapchain_support->present_modes)
                 mgm_free(swapchain_support->present_modes, sizeof(VkSurfaceFormatKHR) * swapchain_support->present_mode_count, MEMORY_TAG_RENDERER);
         
-            MGM_INFO("(Swapchain) Suporte necessário não encontrado para '%s'", properties->deviceName);
+            MGM_INFO("(Vulkan) Suporte necessário para swapchain não encontrado para '%s'", properties->deviceName);
             return FALSE;
         }
 
@@ -283,7 +390,7 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
 
                     if (!found)
                     {
-                        MGM_INFO("Extensão necessária '%s' não foi encontrada para esse dispositivo", requirements->device_extension_names[i]);
+                        MGM_INFO("(Vulkan) Extensão necessária '%s' não foi encontrada para esse dispositivo", requirements->device_extension_names[i]);
                         mgm_free(available_extensions, sizeof(VkExtensionProperties) * available_extensions_count, MEMORY_TAG_RENDERER);
                         return FALSE;
                     }
@@ -301,12 +408,12 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
         // Sampler anisotropy
         if (requirements->sampler_anisotropy && !features->samplerAnisotropy)
         {
-            MGM_INFO("Dispositivo não suporta 'Sampler Anisotropy'");
+            MGM_INFO("(Vulkan) Dispositivo não suporta 'Sampler Anisotropy'");
             return FALSE;
         }
 
         // Dispositivo possui todos os requerimentos necessários
-        MGM_INFO("Dispositivo '%s' possui todos os requerimentos necessários!", properties->deviceName);
+        MGM_INFO("(Vulkan) Dispositivo '%s' possui todos os requerimentos necessários!", properties->deviceName);
         return TRUE;
     }
 
