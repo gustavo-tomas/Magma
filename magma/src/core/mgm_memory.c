@@ -126,7 +126,7 @@ MGM_API char* get_memory_usage_str()
             amount = (f32) stats.tagged_allocations[i];
         }
 
-        i32 length = snprintf(buffer + offset, 8000, " %s: %.2f%s\n", memory_tag_strings[i], amount, unit);
+        i32 length = snprintf(buffer + offset, 8000, "        - %s: %.2f%s\n", memory_tag_strings[i], amount, unit);
         offset += length;
     }
 
