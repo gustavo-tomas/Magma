@@ -7,6 +7,7 @@
 #include "../core/event.h"
 #include "../core/logger.h"
 #include "../core/mgm_memory.h"
+#include "../containers/vector.h"
 
 #include <xcb/xcb.h>
 #include <X11/keysym.h>
@@ -139,6 +140,11 @@ void shutdown_platform(platform_state* plat_state)
     free(xcb_ptrs.protocols_reply);
 
     xcb_destroy_window(state->connection, state->window);
+}
+
+void platform_get_required_extension_names(const char*** names)
+{
+    vector_push(*names, &"VK_KHR_xcb_surface"); // ou xlib
 }
 
 b8 platform_dispatch_messages(platform_state* plat_state)
