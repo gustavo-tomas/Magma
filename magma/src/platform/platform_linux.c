@@ -1,6 +1,6 @@
 #include "platform.h"
 
-#if MGM_PLATFORM_LINUX // Android pode reclamar
+#if MGM_PLATFORM_LINUX // @TODO Android pode reclamar
 
 #include "linux_key_codes.h"
 
@@ -20,6 +20,13 @@
 #include <stdio.h>
 #include <string.h>
 
+// @TODO: achar um jeito de separar criação de superfícies específicas
+// do vulkan da camada de plataforma
+#define VK_USE_PLATFORM_XCB_KHR
+
+#include <vulkan/vulkan.h>
+#include "../renderer/vulkan/vulkan_types.inl"
+
 #if _POSIX_C_SOURCE >= 199309L
     #include <time.h>
 #else
@@ -35,6 +42,7 @@ typedef struct internal_state
     xcb_atom_t wm_protocols;
     xcb_atom_t wm_delete_win;
 
+    VkSurfaceKHR surface;
 } internal_state;
 
 /**
@@ -145,6 +153,32 @@ void shutdown_platform(platform_state* plat_state)
 void platform_get_required_extension_names(const char*** names)
 {
     vector_push(*names, &"VK_KHR_xcb_surface"); // ou xlib
+}
+
+b8 create_vulkan_surface(platform_state* plat_state, vulkan_context* context)
+{
+    internal_state* state = (internal_state *) plat_state->internal_state;
+
+    VkXcbSurfaceCreateInfoKHR create_info = { VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR };
+    create_info.connection = state->connection;
+    create_info.window = state->window;
+
+    VkResult result = vkCreateXcbSurfaceKHR(context->instance, &create_info, context->allocator, &state->surface);
+    VK_CHECK(result);
+
+    if (result != VK_SUCCESS)
+    {
+        MGM_FATAL("Erro ao criar superfície do Vulkan!");
+        return FALSE;
+    }
+
+    context->surface = state->surface;
+    return TRUE;
+}
+
+void destroy_vulkan_surface(struct vulkan_context* context)
+{
+    vkDestroySurfaceKHR(context->instance, context->surface, context->allocator);
 }
 
 b8 platform_dispatch_messages(platform_state* plat_state)

@@ -1,4 +1,5 @@
 #include "vulkan_backend.h"
+#include "vulkan_device.h"
 #include "vulkan_types.inl"
 #include "vulkan_platform.h"
 
@@ -7,6 +8,36 @@
 #include "../../platform/platform.h"
 
 #include <string.h>
+
+// :(
+#if defined(_DEBUG)
+    #include "../../core/logger.h"
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
+        VkDebugUtilsMessageTypeFlagsEXT message_types,
+        const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
+        void* user_data)
+        {
+            switch (message_severity)
+            {
+                default:
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+                    MGM_ERROR(callback_data->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                    MGM_WARN(callback_data->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+                    MGM_INFO(callback_data->pMessage);
+                    break;
+                case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+                    MGM_TRACE(callback_data->pMessage);
+                    break;
+            }
+            return VK_FALSE;
+        }
+#endif
 
 // Há apenas 1 contexto
 static vulkan_context context;
@@ -88,7 +119,6 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
 
     create_info.enabledLayerCount = validation_layer_count;
     create_info.ppEnabledLayerNames = validation_layer_names;
-
     VK_CHECK(vkCreateInstance(&create_info, context.allocator, &context.instance));
 
     MGM_INFO("Instância do vulkan inicializada com sucesso!");
@@ -110,6 +140,22 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
         MGM_DEBUG("Debugger do Vulkan criado com sucesso!");
     #endif
 
+    // Cria a superfície
+    if (!create_vulkan_surface(plat_state, &context))
+    {
+        MGM_ERROR("Erro ao criar superfície do Vulkan!");
+        return FALSE;
+    }
+    MGM_DEBUG("Superfície do Vulkan criada com sucesso!");
+
+    // Cria o dispositivo
+    if (!create_vulkan_device(&context))
+    {
+        MGM_ERROR("Erro ao criar dispositivo do Vulkan!");
+        return FALSE;
+    }
+    MGM_INFO("Dispositivo do Vulkan criado com sucesso!");
+
     vector_destroy(available_layers);
     vector_destroy(extensions);
     vector_destroy(validation_layer_names);
@@ -127,7 +173,11 @@ void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
             func(context.instance, context.debug_messenger, context.allocator);
         }
     #endif
+
+    destroy_vulkan_device(&context);
+    destroy_vulkan_surface(&context);
     vkDestroyInstance(context.instance, context.allocator);
+
     MGM_INFO("Instância do Vulkan destruída com sucesso!");
 }
 

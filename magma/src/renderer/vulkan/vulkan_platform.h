@@ -8,6 +8,15 @@
 
 #include "../../defines.h"
 
+struct platform_state;
+struct vulkan_context;
+
+/* Por enquanto implementados pela plataforma */
+
+b8 create_vulkan_surface(struct platform_state* plat_state, struct vulkan_context* context);
+
+void destroy_vulkan_surface(struct vulkan_context* context);
+
 /**
  * @brief Adiciona o nome da extensão necessária pela plataforma à lista de extensões passada.
  * 
