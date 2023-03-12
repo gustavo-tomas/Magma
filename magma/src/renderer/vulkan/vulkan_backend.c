@@ -166,19 +166,26 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
 void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
 {
     #if defined(_DEBUG)
-        MGM_DEBUG("Destruindo debugger do Vulkan");
         if (context.debug_messenger)
         {
             PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(context.instance, "vkDestroyDebugUtilsMessengerEXT");
             func(context.instance, context.debug_messenger, context.allocator);
+            MGM_DEBUG("(Vulkan) Debugger destruído com sucesso!");
         }
     #endif
 
     destroy_vulkan_device(&context);
-    destroy_vulkan_surface(&context);
-    vkDestroyInstance(context.instance, context.allocator);
+    MGM_INFO("(Vulkan) Dispositivo destruído com sucesso!");
 
-    MGM_INFO("Instância do Vulkan destruída com sucesso!");
+    if (context.surface)
+    {
+        destroy_vulkan_surface(&context);
+        context.surface = 0;
+        MGM_INFO("(Vulkan) Superfície destruída com sucesso!");
+    }
+
+    vkDestroyInstance(context.instance, context.allocator);
+    MGM_INFO("(Vulkan) Instância destruída com sucesso!");
 }
 
 b8 begin_frame_vulkan_renderer_backend(struct renderer_backend* backend, f32 delta_time)
