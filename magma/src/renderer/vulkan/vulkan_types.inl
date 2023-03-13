@@ -15,9 +15,9 @@
  * @brief Verifica se uma expressão que retorna VK_SUCCESS ou VK_ERROR foi bem sucedida.
  */
 #define VK_CHECK(expression)                                                        \
-{                                                                                   \
-    MGM_ASSERT(expression == VK_SUCCESS, "Expressão não resultou em 'VK_SUCCESS'"); \
-}
+    {                                                                                   \
+        MGM_ASSERT(expression == VK_SUCCESS, "Expressão não resultou em 'VK_SUCCESS'"); \
+    }
 
 typedef struct vulkan_swapchain_support_info
 {
@@ -58,6 +58,25 @@ typedef struct vulkan_image
     u32 height;
 } vulkan_image;
 
+typedef enum vulkan_renderpass_state
+{
+    READY,
+    RECORDING,
+    IN_RENDER_PASS,
+    RECORDING_ENDED,
+    SUBMITTED,
+    NOT_ALLOCATED
+} vulkan_renderpass_state;
+
+typedef struct vulkan_renderpass
+{
+    VkRenderPass handle;
+    f32 x, y, w, h;
+    f32 r, g, b, a;
+    f32 depth, stencil;
+    vulkan_renderpass_state state;
+} vulkan_renderpass;
+
 typedef struct vulkan_swapchain
 {
     VkSurfaceFormatKHR image_format;
@@ -69,6 +88,22 @@ typedef struct vulkan_swapchain
     vulkan_image depth_attachment;
 } vulkan_swapchain;
 
+typedef enum vulkan_command_buffer_state
+{
+    COMMAND_BUFFER_STATE_READY,
+    COMMAND_BUFFER_STATE_RECORDING,
+    COMMAND_BUFFER_STATE_IN_RENDER_PASS,
+    COMMAND_BUFFER_STATE_RECORDING_ENDED,
+    COMMAND_BUFFER_STATE_SUBMITTED,
+    COMMAND_BUFFER_STATE_NOT_ALLOCATED
+} vulkan_command_buffer_state;
+
+typedef struct vulkan_command_buffer
+{
+    VkCommandBuffer handle;
+    vulkan_command_buffer_state state;
+} vulkan_command_buffer;
+
 typedef struct vulkan_context
 {
     VkInstance instance;
@@ -76,6 +111,7 @@ typedef struct vulkan_context
     VkSurfaceKHR surface;
     vulkan_device device;
     vulkan_swapchain swapchain;
+    vulkan_renderpass main_renderpass;
 
     u32 image_index;
     u32 current_frame;
@@ -88,7 +124,7 @@ typedef struct vulkan_context
     i32 (*find_memory_index) (u32 type_filter, u32 property_flags);
 
     #if defined(_DEBUG)
-        VkDebugUtilsMessengerEXT debug_messenger;
+    VkDebugUtilsMessengerEXT debug_messenger;
     #endif
 } vulkan_context;
 

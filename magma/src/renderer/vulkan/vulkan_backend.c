@@ -2,6 +2,7 @@
 #include "vulkan_device.h"
 #include "vulkan_types.inl"
 #include "vulkan_swapchain.h"
+#include "vulkan_renderpass.h"
 #include "vulkan_platform.h"
 
 #include "../../core/logger.h"
@@ -114,13 +115,13 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
 
             if (!found)
             {
-                MGM_FATAL("Camada %s não foi encontrada!", validation_layer_names[i]);
+                MGM_FATAL("(Vulkan) Camada de validação %s não foi encontrada!", validation_layer_names[i]);
                 return FALSE;
             }
         }
         vector_destroy(available_layers);
         
-        MGM_DEBUG("Todas as camadas de validação foram encontradas!");
+        MGM_DEBUG("(Vulkan) Todas as camadas de validação foram encontradas!");
     #endif
 
     create_info.enabledLayerCount = validation_layer_count;
@@ -130,11 +131,10 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
     vector_destroy(validation_layer_names);
     vector_destroy(extensions);
 
-    MGM_INFO("Instância do vulkan inicializada com sucesso!");
+    MGM_INFO("(Vulkan) Instância inicializada com sucesso!");
 
     // Debugger
     #if defined(_DEBUG)
-        MGM_DEBUG("Criando debugger do Vulkan");
         u32 log_severity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
 
         VkDebugUtilsMessengerCreateInfoEXT debug_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
@@ -146,28 +146,33 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
         MGM_ASSERT(func, "Erro ao criar debugger do Vulkan!");
         VK_CHECK(func(context.instance, &debug_create_info, context.allocator, &context.debug_messenger));
 
-        MGM_DEBUG("Debugger do Vulkan criado com sucesso!");
+        MGM_DEBUG("(Vulkan) Debugger do Vulkan criado com sucesso!");
     #endif
 
     // Cria a superfície
     if (!create_vulkan_surface(plat_state, &context))
     {
-        MGM_ERROR("Erro ao criar superfície do Vulkan!");
+        MGM_ERROR("(Vulkan) Erro ao criar superfície do Vulkan!");
         return FALSE;
     }
-    MGM_DEBUG("Superfície do Vulkan criada com sucesso!");
+    MGM_DEBUG("(Vulkan) Superfície do Vulkan criada com sucesso!");
 
     // Cria o dispositivo
     if (!create_vulkan_device(&context))
     {
-        MGM_ERROR("Erro ao criar dispositivo do Vulkan!");
+        MGM_ERROR("(Vulkan) Erro ao criar dispositivo do Vulkan!");
         return FALSE;
     }
-    MGM_INFO("Dispositivo do Vulkan criado com sucesso!");
+    MGM_INFO("(Vulkan) Dispositivo do Vulkan criado com sucesso!");
 
     // Cria a swapchain
     create_vulkan_swapchain(&context, context.framebuffer_width, context.framebuffer_height, &context.swapchain);
     MGM_INFO("(Vulkan) Swapchain criada com sucesso!");
+
+    // Cria os passes de renderização
+    create_vulkan_renderpass(&context, &context.main_renderpass, 0, 0, context.framebuffer_width, context.framebuffer_height,
+                             0.0f, 0.4f, 0.5f, 1.0f, 
+                             1.0f, 0);
 
     MGM_INFO("(Vulkan) Renderizador inicializado com sucesso!");
 
@@ -176,6 +181,7 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
 
 void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
 {
+    // Destrói o debugger (se existir)
     #if defined(_DEBUG)
         if (context.debug_messenger)
         {
@@ -185,12 +191,19 @@ void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
         }
     #endif
 
+    // Destrói os passes
+    destroy_vulkan_renderpass(&context, &context.main_renderpass);
+    MGM_INFO("(Vulkan) Passe de renderização destruído com sucesso!");
+
+    // Destrói a swapchain
     destroy_vulkan_swapchain(&context, &context.swapchain);
     MGM_INFO("(Vulkan) Swapchain destruída com sucesso!");
 
+    // Destrói o dispositivo
     destroy_vulkan_device(&context);
     MGM_INFO("(Vulkan) Dispositivo destruído com sucesso!");
 
+    // Destrói a superfície
     if (context.surface)
     {
         destroy_vulkan_surface(&context);
@@ -198,6 +211,7 @@ void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
         MGM_INFO("(Vulkan) Superfície destruída com sucesso!");
     }
 
+    // Destrói a instância
     vkDestroyInstance(context.instance, context.allocator);
     MGM_INFO("(Vulkan) Instância destruída com sucesso!");
 }
