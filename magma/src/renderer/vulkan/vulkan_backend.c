@@ -1,6 +1,7 @@
 #include "vulkan_backend.h"
 #include "vulkan_device.h"
 #include "vulkan_types.inl"
+#include "vulkan_swapchain.h"
 #include "vulkan_platform.h"
 
 #include "../../core/logger.h"
@@ -39,11 +40,15 @@
         }
 #endif
 
+i32 find_memory_index(u32 type_filter, u32 property_flags);
+
 // Há apenas 1 contexto
 static vulkan_context context;
 
 b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const char* application_name, struct platform_state* plat_state)
-{
+{   
+    context.find_memory_index = find_memory_index;
+
     // @TODO: Alocadores (maybe? huuuum?)
     context.allocator = 0;
 
@@ -113,13 +118,17 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
                 return FALSE;
             }
         }
-
+        vector_destroy(available_layers);
+        
         MGM_DEBUG("Todas as camadas de validação foram encontradas!");
     #endif
 
     create_info.enabledLayerCount = validation_layer_count;
     create_info.ppEnabledLayerNames = validation_layer_names;
     VK_CHECK(vkCreateInstance(&create_info, context.allocator, &context.instance));
+    
+    vector_destroy(validation_layer_names);
+    vector_destroy(extensions);
 
     MGM_INFO("Instância do vulkan inicializada com sucesso!");
 
@@ -156,9 +165,11 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
     }
     MGM_INFO("Dispositivo do Vulkan criado com sucesso!");
 
-    vector_destroy(available_layers);
-    vector_destroy(extensions);
-    vector_destroy(validation_layer_names);
+    // Cria a swapchain
+    create_vulkan_swapchain(&context, context.framebuffer_width, context.framebuffer_height, &context.swapchain);
+    MGM_INFO("(Vulkan) Swapchain criada com sucesso!");
+
+    MGM_INFO("(Vulkan) Renderizador inicializado com sucesso!");
 
     return TRUE;
 }
@@ -173,6 +184,9 @@ void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
             MGM_DEBUG("(Vulkan) Debugger destruído com sucesso!");
         }
     #endif
+
+    destroy_vulkan_swapchain(&context, &context.swapchain);
+    MGM_INFO("(Vulkan) Swapchain destruída com sucesso!");
 
     destroy_vulkan_device(&context);
     MGM_INFO("(Vulkan) Dispositivo destruído com sucesso!");
@@ -201,4 +215,17 @@ b8 end_frame_vulkan_renderer_backend(struct renderer_backend* backend, f32 delta
 void on_resize_vulkan_renderer_backend(struct renderer_backend* backend, u16 width, u16 height)
 {
 
+}
+
+i32 find_memory_index(u32 type_filter, u32 property_flags)
+{
+    VkPhysicalDeviceMemoryProperties memory_properties;
+    vkGetPhysicalDeviceMemoryProperties(context.device.physical_device, &memory_properties);
+
+    for (u32 i = 0; i < memory_properties.memoryTypeCount; i++)
+        if (type_filter & (1 << i) && (memory_properties.memoryTypes[i].propertyFlags & property_flags) == property_flags)
+            return i;
+
+    MGM_WARN("(Vulkan) Não foi possível encontrar o tipo de memória desejado!");
+    return -1;
 }

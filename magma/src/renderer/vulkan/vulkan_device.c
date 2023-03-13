@@ -125,6 +125,34 @@ void destroy_vulkan_device(vulkan_context* context)
     context->device.transfer_queue_index = -1;
 }
 
+b8 detect_device_depth_format(vulkan_device* device)
+{
+    // Possíveis formatos
+    const u64 possible_formats_count = 3;
+    VkFormat formats[3] = { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT };
+
+    u32 flags = VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+    for (u64 i = 0; i < possible_formats_count; i++)
+    {
+        VkFormatProperties properties;
+        vkGetPhysicalDeviceFormatProperties(device->physical_device, formats[i], &properties);
+
+        if ((properties.linearTilingFeatures & flags) == flags)
+        {
+            device->depth_format = formats[i];
+            return TRUE;
+        }
+
+        else if ((properties.optimalTilingFeatures & flags) == flags)
+        {
+            device->depth_format = formats[i];
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 void query_device_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, vulkan_swapchain_support_info* support_info)
 {
     // Verifica capacidades da superfície
@@ -135,7 +163,7 @@ void query_device_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceK
 
     if (support_info->format_count != 0)
     {
-        if (support_info->formats)
+        if (!support_info->formats)
             support_info->formats = mgm_allocate(sizeof(VkSurfaceFormatKHR) * support_info->format_count, MEMORY_TAG_RENDERER);
     
         VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &support_info->format_count, support_info->formats));

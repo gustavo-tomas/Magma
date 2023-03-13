@@ -121,4 +121,9 @@ STATIC_ASSERT(sizeof(f64) == 8, "Tamanho do f64 deve ser 8 bytes!");
     #endif
 #endif
 
+// Comparação de tamanho
+#define MGM_MAX(v1, v2) v1 >= v2 ? v1 : v2
+#define MGM_MIN(v1, v2) v1 <= v2 ? v1 : v2
+#define MGM_CLAMP(value, min, max) (value <= min) ? min : (value >= max) ? max : value
+
 #endif // DEFINES_H

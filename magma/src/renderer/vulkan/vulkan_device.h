@@ -43,4 +43,6 @@ b8 physical_device_meets_requirements(VkPhysicalDevice device, VkSurfaceKHR surf
 
 void query_device_swapchain_support(VkPhysicalDevice physical_device, VkSurfaceKHR surface, vulkan_swapchain_support_info* support_info);
 
+b8 detect_device_depth_format(vulkan_device* device);
+
 #endif // VULKAN_DEVICE_H
