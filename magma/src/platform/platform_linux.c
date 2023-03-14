@@ -35,20 +35,12 @@ typedef struct internal_state
     xcb_connection_t* connection;
     xcb_window_t window;
     xcb_screen_t* screen;
-    xcb_atom_t wm_protocols;
-    xcb_atom_t wm_delete_win;
+    xcb_intern_atom_reply_t* wm_protocols;
+    xcb_intern_atom_reply_t* wm_delete_win;
+    xcb_key_symbols_t* symbols;
 
     VkSurfaceKHR surface;
 } internal_state;
-
-/**
- * @brief Guarda referências para dados criados pela xcb, que precisam ser liberados manualmente.
- */
-static struct xcb_ptrs
-{
-    xcb_intern_atom_reply_t* delete_reply;
-    xcb_intern_atom_reply_t* protocols_reply;
-} xcb_ptrs;
 
 b8 initialize_platform(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
@@ -108,20 +100,16 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
                                                                    strlen("WM_PROTOCOLS"), "WM_PROTOCOLS");
 
     // Esses valores devem ser liberados (free)
-    xcb_intern_atom_reply_t* wm_delete_reply = xcb_intern_atom_reply(state->connection, wm_delete_cookie, NULL);
-    xcb_intern_atom_reply_t* wm_protocols_reply = xcb_intern_atom_reply(state->connection, wm_protocols_cookie, NULL);
-
-    // Salva referência para deletar no futuro
-    xcb_ptrs.delete_reply = wm_delete_reply;
-    xcb_ptrs.protocols_reply = wm_protocols_reply;
-
-    state->wm_delete_win = wm_delete_reply->atom;
-    state->wm_protocols = wm_protocols_reply->atom;
+    state->wm_delete_win = xcb_intern_atom_reply(state->connection, wm_delete_cookie, NULL);
+    state->wm_protocols = xcb_intern_atom_reply(state->connection, wm_protocols_cookie, NULL);
 
     xcb_change_property(state->connection, XCB_PROP_MODE_REPLACE, state->window, 
-                        wm_protocols_reply->atom, 4, 32, 1, &wm_delete_reply->atom);
+                        state->wm_protocols->atom, 4, 32, 1, &state->wm_delete_win->atom);
 
     xcb_map_window(state->connection, state->window);
+
+    // Aloca mapeamento do xcb para ler input
+    state->symbols = xcb_key_symbols_alloc(state->connection);
 
     i32 stream_result = xcb_flush(state->connection);
     if (stream_result <= 0)
@@ -138,14 +126,14 @@ void shutdown_platform(platform_state* plat_state)
     internal_state* state = (internal_state *) plat_state->internal_state;
 
     // Libera memória manualmente (porque xcb é incrível)
-    free(xcb_ptrs.delete_reply);
-    free(xcb_ptrs.protocols_reply);
+    free(state->wm_delete_win);
+    free(state->wm_protocols);
 
+    xcb_key_symbols_free(state->symbols);
     xcb_destroy_window_checked(state->connection, state->window);
 
     // @TODO: consertar isso aqui
     mgm_free(state, sizeof(internal_state), MEMORY_TAG_PLATFORM);
-    MGM_WARN("SIZEOF INTERNAL STATE: %d", sizeof(internal_state));
 }
 
 void platform_get_required_extension_names(const char*** names)
@@ -203,12 +191,9 @@ b8 platform_dispatch_messages(platform_state* plat_state)
                 xcb_key_press_event_t* kp_event = (xcb_key_press_event_t*) event;
                 b8 pressed = event->response_type == XCB_KEY_PRESS;
 
-                // @TODO: verificar a corretude
-                xcb_key_symbols_t* symbols = xcb_key_symbols_alloc(state->connection);
-                xcb_keysym_t keysym = xcb_key_press_lookup_keysym(symbols, kp_event, 0);
-                xcb_key_symbols_free(symbols);
-
+                xcb_keysym_t keysym = xcb_key_press_lookup_keysym(state->symbols, kp_event, 0);
                 keys key = translate_keycode(keysym);
+
                 input_process_key(key, pressed);
             } break;
 
@@ -255,7 +240,7 @@ b8 platform_dispatch_messages(platform_state* plat_state)
                 cm = (xcb_client_message_event_t *) event;
 
                 // Fecha a janela
-                if (cm->data.data32[0] == state->wm_delete_win)
+                if (cm->data.data32[0] == state->wm_delete_win->atom)
                     quit_flagged = TRUE;
             } break;
             
