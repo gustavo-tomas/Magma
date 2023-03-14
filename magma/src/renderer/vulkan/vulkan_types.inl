@@ -32,6 +32,8 @@ typedef struct vulkan_device
 {
     VkPhysicalDevice physical_device;
     VkDevice logical_device;
+    VkCommandPool graphics_command_pool;
+
     vulkan_swapchain_support_info swapchain_support;
 
     i32 graphics_queue_index;
@@ -112,6 +114,7 @@ typedef struct vulkan_context
     vulkan_device device;
     vulkan_swapchain swapchain;
     vulkan_renderpass main_renderpass;
+    vulkan_command_buffer* graphics_command_buffers;
 
     u32 image_index;
     u32 current_frame;

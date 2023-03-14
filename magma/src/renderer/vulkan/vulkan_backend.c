@@ -3,9 +3,11 @@
 #include "vulkan_types.inl"
 #include "vulkan_swapchain.h"
 #include "vulkan_renderpass.h"
+#include "vulkan_command_buffer.h"
 #include "vulkan_platform.h"
 
 #include "../../core/logger.h"
+#include "../../core/mgm_memory.h"
 #include "../../containers/vector.h"
 #include "../../platform/platform.h"
 
@@ -41,14 +43,16 @@
         }
 #endif
 
-i32 find_memory_index(u32 type_filter, u32 property_flags);
+i32 _find_memory_index(u32 type_filter, u32 property_flags);
+
+void _create_command_buffers(renderer_backend* backend);
 
 // Há apenas 1 contexto
 static vulkan_context context;
 
 b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const char* application_name, struct platform_state* plat_state)
 {   
-    context.find_memory_index = find_memory_index;
+    context.find_memory_index = _find_memory_index;
 
     // @TODO: Alocadores (maybe? huuuum?)
     context.allocator = 0;
@@ -174,6 +178,10 @@ b8 initialize_vulkan_renderer_backend (struct renderer_backend* backend, const c
                              0.0f, 0.4f, 0.5f, 1.0f, 
                              1.0f, 0);
 
+    // Cria os buffers de comando
+    _create_command_buffers(backend);
+    MGM_INFO("(Vulkan) Buffers de comando criados com sucesso!");
+
     MGM_INFO("(Vulkan) Renderizador inicializado com sucesso!");
 
     return TRUE;
@@ -190,6 +198,12 @@ void shutdown_vulkan_renderer_backend(struct renderer_backend* backend)
             MGM_DEBUG("(Vulkan) Debugger destruído com sucesso!");
         }
     #endif
+
+    // Destrói os buffers de comando
+    /* @NOTE: os buffers de comando são liberados automaticamente quando a pool de comandos é destruída! */
+    vector_destroy(context.graphics_command_buffers);
+    context.graphics_command_buffers = 0;
+    MGM_INFO("(Vulkan) Buffers de comando destruídos com sucesso!");
 
     // Destrói os passes
     destroy_vulkan_renderpass(&context, &context.main_renderpass);
@@ -231,7 +245,7 @@ void on_resize_vulkan_renderer_backend(struct renderer_backend* backend, u16 wid
 
 }
 
-i32 find_memory_index(u32 type_filter, u32 property_flags)
+i32 _find_memory_index(u32 type_filter, u32 property_flags)
 {
     VkPhysicalDeviceMemoryProperties memory_properties;
     vkGetPhysicalDeviceMemoryProperties(context.device.physical_device, &memory_properties);
@@ -242,4 +256,22 @@ i32 find_memory_index(u32 type_filter, u32 property_flags)
 
     MGM_WARN("(Vulkan) Não foi possível encontrar o tipo de memória desejado!");
     return -1;
+}
+
+void _create_command_buffers(renderer_backend* backend)
+{
+    if (!context.graphics_command_buffers)
+    {
+        context.graphics_command_buffers = vector_reserve(vulkan_command_buffer, context.swapchain.image_count);
+        for (u32 i = 0; i < context.swapchain.image_count; i++)
+            mgm_zero_memory(&context.graphics_command_buffers[i], sizeof(vulkan_command_buffer));
+    }
+
+    for (u32 i = 0; i < context.swapchain.image_count; i++)
+    {
+        if (context.graphics_command_buffers[i].handle)
+            free_vulkan_command_buffer(&context, context.device.graphics_command_pool, &context.graphics_command_buffers[i]);
+
+        allocate_vulkan_command_buffer(&context, context.device.graphics_command_pool, TRUE, &context.graphics_command_buffers[i]);
+    }
 }

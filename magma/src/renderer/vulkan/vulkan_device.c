@@ -65,16 +65,22 @@ b8 create_vulkan_device(vulkan_context* context)
     VK_CHECK(vkCreateDevice(context->device.physical_device, &device_create_info, context->allocator, &context->device.logical_device));
     MGM_INFO("(Vulkan) Dispositivo lógico criado com sucesso!");
 
+    // @TODO: provável vazamento aqui - Libera recursos
+    for (u32 i = 0; i < index_count; i++)
+        mgm_free((void *) queue_create_infos[i].pQueuePriorities, sizeof(f32), MEMORY_TAG_RENDERER);
+
     // Obtém os 'Queues'
     vkGetDeviceQueue(context->device.logical_device, context->device.graphics_queue_index, 0, &context->device.graphics_queue);
     vkGetDeviceQueue(context->device.logical_device, context->device.present_queue_index, 0, &context->device.present_queue);
     vkGetDeviceQueue(context->device.logical_device, context->device.transfer_queue_index, 0, &context->device.transfer_queue);
-
     MGM_INFO("(Vulkan) 'Queue' obtido com sucesso!");
 
-    // Libera recursos @TODO: provável vazamento aqui
-    for (u32 i = 0; i < index_count; i++)
-        mgm_free((void *) queue_create_infos[i].pQueuePriorities, sizeof(f32), MEMORY_TAG_RENDERER);
+    // Cria a pool de comandos para a fila de gráficos(?)
+    VkCommandPoolCreateInfo pool_create_info = { VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO };
+    pool_create_info.queueFamilyIndex = context->device.graphics_queue_index;
+    pool_create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VK_CHECK(vkCreateCommandPool(context->device.logical_device, &pool_create_info, context->allocator, &context->device.graphics_command_pool));
+    MGM_INFO("(Vulkan) Pool de comandos para gráficos criada com sucesso!");
 
     return TRUE;
 }
@@ -85,6 +91,10 @@ void destroy_vulkan_device(vulkan_context* context)
     context->device.graphics_queue = 0;
     context->device.present_queue = 0;
     context->device.transfer_queue = 0;
+
+    // Destrói as pools de comando
+    vkDestroyCommandPool(context->device.logical_device, context->device.graphics_command_pool, context->allocator);
+    MGM_INFO("(Vulkan) Pool de comandos para gráficos destruída com sucesso!");
 
     // Deleta dispositivos lógicos
     if (context->device.logical_device)
