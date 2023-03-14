@@ -58,6 +58,8 @@ int main()
     mgm_free(game_instance.state, sizeof(game_state), MEMORY_TAG_GAME);
     shutdown_subsystems();
 
+    MGM_INFO(get_memory_usage_str());
+
     return 0;
 }
 

@@ -26,6 +26,7 @@ static const char* memory_tag_strings[MEMORY_TAG_MAX_TAGS] =
     "TEXTURE",
     "MATERIAL_INSTANCE",
     "RENDERER",
+    "PLATFORM",
     "GAME",
     "TRANSFORM",
     "ENTITY",

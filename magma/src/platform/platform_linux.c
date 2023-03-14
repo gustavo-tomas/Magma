@@ -57,7 +57,7 @@ static struct xcb_ptrs
 b8 initialize_platform(platform_state* plat_state, const char* application_name, i32 x, i32 y, i32 width, i32 height)
 {
     // Cria o estado interno
-    plat_state->internal_state = mgm_allocate(sizeof(internal_state), MEMORY_TAG_UNKNOWN); // @TODO: descobrir a tag
+    plat_state->internal_state = mgm_allocate(sizeof(internal_state), MEMORY_TAG_PLATFORM);
     internal_state* state = (internal_state *) plat_state->internal_state;
 
     // Conecta com o servidor
