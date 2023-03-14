@@ -10,11 +10,8 @@
 #include "../containers/vector.h"
 
 #include <xcb/xcb.h>
-#include <X11/keysym.h>
-#include <X11/XKBlib.h>
-#include <X11/Xlib.h>
-#include <X11/Xlib-xcb.h>
-#include <sys/time.h>
+#include <xcb/xkb.h>
+#include <xcb/xcb_keysyms.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -35,7 +32,6 @@
 
 typedef struct internal_state
 {
-    Display* display;
     xcb_connection_t* connection;
     xcb_window_t window;
     xcb_screen_t* screen;
@@ -61,12 +57,11 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
     internal_state* state = (internal_state *) plat_state->internal_state;
 
     // Conecta com o servidor
-    state->display = XOpenDisplay(NULL);
+    state->connection = xcb_connect(0, 0);
 
     // Desativa repetições de tecla
-    XAutoRepeatOff(state->display);
-
-    state->connection = XGetXCBConnection(state->display);
+    xcb_xkb_use_extension(state->connection, XCB_XKB_MAJOR_VERSION, XCB_XKB_MINOR_VERSION);
+    xcb_xkb_per_client_flags(state->connection, XCB_XKB_ID_USE_CORE_KBD, XCB_XKB_PER_CLIENT_FLAG_DETECTABLE_AUTO_REPEAT, 1, 0, 0, 0);
 
     // Conexão falhou
     if (xcb_connection_has_error(state->connection))
@@ -141,13 +136,16 @@ b8 initialize_platform(platform_state* plat_state, const char* application_name,
 void shutdown_platform(platform_state* plat_state)
 {
     internal_state* state = (internal_state *) plat_state->internal_state;
-    XAutoRepeatOn(state->display); // lol
 
     // Libera memória manualmente (porque xcb é incrível)
     free(xcb_ptrs.delete_reply);
     free(xcb_ptrs.protocols_reply);
 
-    xcb_destroy_window(state->connection, state->window);
+    xcb_destroy_window_checked(state->connection, state->window);
+
+    // @TODO: consertar isso aqui
+    mgm_free(state, sizeof(internal_state), MEMORY_TAG_PLATFORM);
+    MGM_WARN("SIZEOF INTERNAL STATE: %d", sizeof(internal_state));
 }
 
 void platform_get_required_extension_names(const char*** names)
@@ -204,11 +202,13 @@ b8 platform_dispatch_messages(platform_state* plat_state)
             {
                 xcb_key_press_event_t* kp_event = (xcb_key_press_event_t*) event;
                 b8 pressed = event->response_type == XCB_KEY_PRESS;
-                xcb_keycode_t code = kp_event->detail;
-                KeySym key_sym = XkbKeycodeToKeysym(state->display, (KeyCode) code, 0, code & ShiftMask ? 1 : 0);
 
-                keys key = translate_keycode(key_sym);
+                // @TODO: verificar a corretude
+                xcb_key_symbols_t* symbols = xcb_key_symbols_alloc(state->connection);
+                xcb_keysym_t keysym = xcb_key_press_lookup_keysym(symbols, kp_event, 0);
+                xcb_key_symbols_free(symbols);
 
+                keys key = translate_keycode(keysym);
                 input_process_key(key, pressed);
             } break;
 

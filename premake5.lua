@@ -25,7 +25,7 @@ project "magma"
 
     filter "configurations:Debug"
         buildoptions { "-Wall", "-g", "-fsanitize=address", "-fno-omit-frame-pointer" }
-        linkoptions { "-fsanitize=address", "-lX11", "-lX11-xcb", "-lxcb", "-lvulkan" }
+        linkoptions { "-fsanitize=address", "-lxcb", "-lxcb-xkb", "-lxcb-keysyms", "-lvulkan" }
         defines "_DEBUG"
         symbols "On"
         runtime "Debug"
