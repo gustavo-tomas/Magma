@@ -178,5 +178,9 @@ void destroy_vulkan_swapchain(vulkan_context* context, vulkan_swapchain* swapcha
     for (u32 i = 0; i < swapchain->image_count; i++)
         vkDestroyImageView(context->device.logical_device, swapchain->views[i], context->allocator);
 
+    // Atualiza o gerenciador de memória
+    mgm_free(swapchain->images, sizeof(VkImage) * swapchain->image_count, MEMORY_TAG_RENDERER);
+    mgm_free(swapchain->views, sizeof(VkImageView) * swapchain->image_count, MEMORY_TAG_RENDERER);
+
     vkDestroySwapchainKHR(context->device.logical_device, swapchain->handle, context->allocator);
 }
